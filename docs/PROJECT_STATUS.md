@@ -45,7 +45,7 @@
 - [x] إضافة تصميم متجاوب وتفاعلات أولية.
 - [x] إضافة .env.example و.gitignore.
 - [x] إضافة GitHub Actions workflow للبناء.
-- [ ] تأكيد نتيجة GitHub Actions build.
+- [x] تأكيد نجاح GitHub Actions build (run 44130165020).
 - [ ] مراجعة الواجهة بصرياً على الهاتف والحاسوب.
 
 ## 5. ما تعمل فعلياً في الواجهة الحالية
@@ -86,7 +86,7 @@
 - إضافة أقسام التخصصات والأدوات وخطة المراحل.
 - إضافة Workflow للبناء.
 - إضافة ROADMAP.md لتفصيل المراحل والأدوات والمميزات.
-- حالة build غير مؤكدة وقت تحديث هذا السجل.
+- نجح GitHub Actions build على commit 1cb8e6260eccdd6eeca7793b51c47f12d9dab189؛ npm install وnpm run build اكتملتا بنجاح.
 
 ## 9. تعليمات التسليم لأي نموذج أو مطور
 1. اقرأ README.md.
@@ -97,3 +97,10 @@
 6. لا تدّعِ نجاح Firebase أو AI أو build دون اختبار حقيقي.
 7. لا تضع أسراراً في Git أو متغيرات VITE_.
 8. حدّث هذا السجل بعد كل تغيير واكتب الخطوة التالية بوضوح.
+
+
+## 10. دليل اختبار البناء
+- GitHub Actions run: https://github.com/ibrhimdd/vestra-art-lab/actions/runs/44130165020
+- الحالة: completed / success.
+- الخطوات: Checkout وSetup Node وInstall dependencies وBuild application نجحت.
+- هذا يؤكد نجاح بناء Vite فقط؛ لا يؤكد اختبار الواجهة بصرياً أو تشغيل Firebase أو وظائف AI.
