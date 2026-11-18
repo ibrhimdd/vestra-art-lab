@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail, Sparkles, UserRound } from 'lucide-react'
-import { useAuth } from './AuthContext'
-import { isFirebaseConfigured } from './firebase'
+import { useAuth } from '../lib/AuthContext'
+import { isFirebaseConfigured } from '../lib/firebase'
 
 export default function AuthScreen() {
   const { login, register, resetPassword } = useAuth()
