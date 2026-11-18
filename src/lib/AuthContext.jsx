@@ -21,7 +21,20 @@ export function AuthProvider({ children }) {
       setLoading(false)
       return undefined
     }
-    return onAuthStateChanged(auth, setUser, () => setUser(null))
+
+    // Finish the initial loading state after Firebase resolves the auth session.
+    return onAuthStateChanged(
+      auth,
+      (nextUser) => {
+        setUser(nextUser)
+        setLoading(false)
+      },
+      (error) => {
+        console.error('Firebase auth state error:', error)
+        setUser(null)
+        setLoading(false)
+      },
+    )
   }, [])
 
   const register = async ({ name, email, password }) => {
