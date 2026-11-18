@@ -1,10 +1,14 @@
 import { useState } from 'react'
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
+import { db } from './lib/firebase'
+import { useAuth } from './lib/AuthContext'
+import AuthScreen from './components/AuthScreen'
 import {
   Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
   ChevronDown, ChevronLeft, CircleHelp, CloudUpload, Compass,
   FileImage, FolderKanban, Gem, GraduationCap, Grid2X2, Layers3,
   Lightbulb, Menu, Palette, Plus, Search, Settings2, Shapes,
-  Sparkles, SwatchBook, WandSparkles, X
+  Sparkles, SwatchBook, WandSparkles, X, LogOut
 } from 'lucide-react'
 
 const disciplines = [
@@ -39,6 +43,10 @@ function App() {
   const [projectName, setProjectName] = useState('')
   const [showProject, setShowProject] = useState(false)
   const [notice, setNotice] = useState('')
+  const { user, loading, logout } = useAuth()
+
+  if (loading) return <div className="auth-loading">جارٍ تحميل مساحة VESTRA...</div>
+  if (!user) return <AuthScreen />
 
   const nav = [
     { id: 'overview', label: 'نظرة عامة', icon: Compass },
@@ -54,12 +62,25 @@ function App() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  const createProject = (event) => {
+  const createProject = async (event) => {
     event.preventDefault()
-    if (!projectName.trim()) return
-    setNotice('تم تجهيز نموذج المشروع محلياً. حفظه في حسابك سيتاح بعد ربط Firebase.')
-    setProjectName('')
-    setShowProject(false)
+    if (!projectName.trim() || !user || !db) return
+    try {
+      await addDoc(collection(db, 'projects'), {
+        ownerId: user.uid,
+        name: projectName.trim(),
+        discipline: selectedDiscipline || 'general',
+        status: 'draft',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      })
+      setNotice('تم حفظ مشروعك في Firestore بنجاح.')
+      setProjectName('')
+      setShowProject(false)
+    } catch (error) {
+      console.error('Project save failed:', error)
+      setNotice('تعذر حفظ المشروع. تحقق من قواعد Firestore واتصال الإنترنت.')
+    }
   }
 
   return (
@@ -83,7 +104,7 @@ function App() {
         <button className="nav-item" onClick={() => setNotice('سيتم إعداد الإعدادات بعد ربط الخدمات.')}><Settings2 size={18} /><span>الإعدادات</span></button>
         <div className="sidebar-bottom">
           <div className="help-card"><div className="help-icon"><CircleHelp size={18} /></div><strong>مساحة للإبداع بلا حدود</strong><p>ابدأ بفكرة صغيرة، وطورها خطوة بخطوة.</p><span>اكتشف المختبر <ArrowLeft size={13} /></span></div>
-          <div className="profile-mini"><div className="avatar">ط</div><div><strong>مساحة الطالب</strong><small>زائر • وضع المعاينة</small></div><ChevronDown size={16} /></div>
+          <div className="profile-mini"><div className="avatar">{(user.displayName || user.email || 'ط').slice(0, 1).toUpperCase()}</div><div><strong>{user.displayName || 'مساحة الطالب'}</strong><small>{user.email}</small></div><button className="profile-logout" onClick={() => logout()} aria-label="تسجيل الخروج"><LogOut size={15} /></button></div>
         </div>
       </aside>
 
@@ -98,7 +119,7 @@ function App() {
           <div className="topbar-left">
             <div className="search-box"><Search size={16} /><input placeholder="ابحث في المختبر..." aria-label="ابحث في المختبر" /><kbd>⌘ K</kbd></div>
             <button className="icon-btn notification-btn" onClick={() => setNotice('لا توجد إشعارات جديدة حالياً.')} aria-label="الإشعارات"><Bell size={18} /><i /></button>
-            <div className="top-avatar">V</div>
+            <div className="top-avatar">{(user.displayName || user.email || 'V').slice(0, 1).toUpperCase()}</div><button className="icon-btn logout-btn" onClick={() => logout()} aria-label="تسجيل الخروج" title="تسجيل الخروج"><LogOut size={17} /></button>
           </div>
         </header>
 
@@ -141,7 +162,7 @@ function App() {
 
       {notice && <div className="toast" role="status"><Sparkles size={17} /><span>{notice}</span><button onClick={() => setNotice('')} aria-label="إغلاق"><X size={16} /></button></div>}
 
-      {showProject && <div className="modal-backdrop" onClick={() => setShowProject(false)}><form className="project-modal" onSubmit={createProject} onClick={e => e.stopPropagation()}><button type="button" className="modal-close icon-btn" onClick={() => setShowProject(false)} aria-label="إغلاق"><X size={19} /></button><div className="modal-icon"><Plus size={22} /></div><div className="section-kicker">NEW CREATIVE PROJECT</div><h2>ابدأ فكرتك الجديدة</h2><p>اكتب اسماً مبدئياً لمشروعك. الحفظ الفعلي في حسابك سيتاح بعد ربط Firebase.</p><label htmlFor="project-name">اسم المشروع</label><input id="project-name" autoFocus value={projectName} onChange={e => setProjectName(e.target.value)} placeholder="مثلاً: مجموعة أزياء مستوحاة من الطبيعة" /><button className="primary-btn modal-submit" type="submit">إنشاء المشروع <ArrowLeft size={16} /></button></form></div>}
+      {showProject && <div className="modal-backdrop" onClick={() => setShowProject(false)}><form className="project-modal" onSubmit={createProject} onClick={e => e.stopPropagation()}><button type="button" className="modal-close icon-btn" onClick={() => setShowProject(false)} aria-label="إغلاق"><X size={19} /></button><div className="modal-icon"><Plus size={22} /></div><div className="section-kicker">NEW CREATIVE PROJECT</div><h2>ابدأ فكرتك الجديدة</h2><p>اكتب اسماً لمشروعك، وسيتم حفظه في مساحتك الخاصة.</p><label htmlFor="project-name">اسم المشروع</label><input id="project-name" autoFocus value={projectName} onChange={e => setProjectName(e.target.value)} placeholder="مثلاً: مجموعة أزياء مستوحاة من الطبيعة" /><button className="primary-btn modal-submit" type="submit">إنشاء المشروع <ArrowLeft size={16} /></button></form></div>}
     </div>
   )
 }
