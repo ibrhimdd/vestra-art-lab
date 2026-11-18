@@ -3,6 +3,7 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from './lib/firebase'
 import { useAuth } from './lib/AuthContext'
 import AuthScreen from './components/AuthScreen'
+import ProjectsSection from './components/ProjectsSection'
 import {
   Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
   ChevronDown, ChevronLeft, CircleHelp, CloudUpload, Compass,
@@ -152,7 +153,7 @@ function App() {
             <div className="tools-grid">{tools.map((tool, i) => { const Icon = tool.icon; return <article className="tool-card" key={tool.title}><div className="tool-icon"><Icon size={20} /></div><div className="tool-tag">{tool.tag}</div><h3>{tool.title}</h3><p>{tool.desc}</p><div className="tool-bottom"><span className="tool-status">{tool.status}</span><span className="tool-number">0{i + 1}</span></div></article> })}</div>
           </section>
 
-          <section className="project-callout" id="projects"><div className="callout-symbol"><FolderKanban size={25} /></div><div><div className="section-kicker">YOUR IDEAS, YOUR SPACE</div><h2>كل مشروع يبدأ بخطوة.</h2><p>قريباً هتقدر تجمع تصميماتك ومراجعك وملاحظاتك ونتائج تجاربك في مساحة واحدة.</p></div><button className="outline-btn" onClick={() => setShowProject(true)}>إنشاء مشروع <Plus size={16} /></button></section>
+          <ProjectsSection onNotice={setNotice} />
 
           <section className="section-block roadmap-section" id="roadmap"><div className="section-heading"><div><div className="section-kicker">FROM IDEA TO REALITY</div><h2>رحلة بناء المختبر</h2><p>خطة واضحة للمراحل والوظائف التي سننفذها بالترتيب.</p></div><span className="roadmap-count">06 مراحل رئيسية</span></div><div className="roadmap-list">{roadmap.map((step, i) => <div className={`roadmap-item ${step.active ? 'current' : ''}`} key={step.n}><div className="roadmap-marker">{step.active ? <Check size={16} /> : step.n}</div><div className="roadmap-copy"><h3>{step.title}</h3><p>{step.desc}</p></div><span className="roadmap-state">{step.state}</span>{i !== roadmap.length - 1 && <div className="roadmap-connector" />}</div>)}</div></section>
 
