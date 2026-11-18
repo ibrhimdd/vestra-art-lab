@@ -4,6 +4,7 @@ import { db } from './lib/firebase'
 import { useAuth } from './lib/AuthContext'
 import AuthScreen from './components/AuthScreen'
 import ProjectsSection from './components/ProjectsSection'
+import ProfileSection from './components/ProfileSection'
 import {
   Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
   ChevronDown, ChevronLeft, CircleHelp, CloudUpload, Compass,
@@ -101,7 +102,7 @@ function App() {
         </nav>
         <div className="side-divider" />
         <div className="side-label">حسابك</div>
-        <button className="nav-item" onClick={() => setNotice('سيتم إعداد الملف الشخصي ضمن مرحلة الحسابات.')}><GraduationCap size={18} /><span>ملفي الشخصي</span></button>
+        <button className="nav-item" onClick={() => goTo('profile')}><GraduationCap size={18} /><span>ملفي الشخصي</span></button>
         <button className="nav-item" onClick={() => setNotice('سيتم إعداد الإعدادات بعد ربط الخدمات.')}><Settings2 size={18} /><span>الإعدادات</span></button>
         <div className="sidebar-bottom">
           <div className="help-card"><div className="help-icon"><CircleHelp size={18} /></div><strong>مساحة للإبداع بلا حدود</strong><p>ابدأ بفكرة صغيرة، وطورها خطوة بخطوة.</p><span>اكتشف المختبر <ArrowLeft size={13} /></span></div>
@@ -152,6 +153,8 @@ function App() {
             <div className="section-heading"><div><div className="section-kicker">YOUR CREATIVE TOOLKIT</div><h2>أدوات المختبر</h2><p>مجموعة أدوات هتساعدك في كل خطوة من الفكرة إلى التنفيذ.</p></div><span className="planned-label"><span /> أدوات ضمن خطة التطوير</span></div>
             <div className="tools-grid">{tools.map((tool, i) => { const Icon = tool.icon; return <article className="tool-card" key={tool.title}><div className="tool-icon"><Icon size={20} /></div><div className="tool-tag">{tool.tag}</div><h3>{tool.title}</h3><p>{tool.desc}</p><div className="tool-bottom"><span className="tool-status">{tool.status}</span><span className="tool-number">0{i + 1}</span></div></article> })}</div>
           </section>
+
+          <ProfileSection onNotice={setNotice} />
 
           <ProjectsSection onNotice={setNotice} />
 
