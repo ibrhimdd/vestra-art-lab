@@ -111,13 +111,26 @@ export default async function handler(req, res) {
 
     // Gemini can temporarily return 503 when model capacity is busy.
     // Retry briefly, then use a lighter Gemini fallback before returning an error.
-    const fallbackModel = process.env.AI_FALLBACK_MODEL
-      || (baseUrl.includes('generativelanguage.googleapis.com') ? 'gemini-3.5-flash-lite' : '')
-    const modelsToTry = [model, ...(fallbackModel && fallbackModel !== model ? [fallbackModel] : [])]
+    const configuredFallbacks = (process.env.AI_FALLBACK_MODELS || '')
+      .split(',')
+      .map(value => value.trim())
+      .filter(Boolean)
+    const legacyFallback = process.env.AI_FALLBACK_MODEL ? [process.env.AI_FALLBACK_MODEL] : []
+    const defaultGeminiFallbacks = baseUrl.includes('generativelanguage.googleapis.com')
+      ? ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite']
+      : []
+    const modelsToTry = [...new Set([
+      model,
+      ...configuredFallbacks,
+      ...legacyFallback,
+      ...defaultGeminiFallbacks,
+    ])].filter(Boolean)
     let lastStatus = 502
     let lastError = 'Unknown provider error'
+    let lastModel = model
 
     for (const selectedModel of modelsToTry) {
+      lastModel = selectedModel;
       for (let attempt = 0; attempt < 2; attempt += 1) {
         let response
         try {
@@ -174,7 +187,7 @@ export default async function handler(req, res) {
       }
     }
 
-    console.error('AI provider request failed after retries:', lastStatus, String(lastError).slice(0, 500))
+    console.error('AI provider request failed after model fallback chain:', { model: lastModel, status: lastStatus, error: String(lastError).slice(0, 500) })
     return res.status(502).json({
       error: lastStatus === 429 || lastStatus === 503
         ? 'مزود الذكاء الاصطناعي مشغول حالياً. حاول مرة أخرى بعد قليل.'
