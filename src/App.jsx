@@ -5,6 +5,7 @@ import { useAuth } from './lib/AuthContext'
 import AuthScreen from './components/AuthScreen'
 import ProjectsSection from './components/ProjectsSection'
 import MoodboardSection from './components/MoodboardSection'
+import ColorStudioSection from './components/ColorStudioSection'
 import ProfileSection from './components/ProfileSection'
 import {
   Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
@@ -26,7 +27,7 @@ const tools = [
   { title: 'محلل التصميم', desc: 'احصل على ملاحظات حول التكوين والألوان.', icon: Activity, tag: 'تحليل ذكي', status: 'قريباً' },
   { title: 'لوحة الإلهام', desc: 'اجمع المراجع والألوان والصور في مساحة واحدة.', icon: Grid2X2, tag: 'تنظيم بصري', status: 'متاح الآن' },
   { title: 'مكتبة الخامات', desc: 'استكشف الخامات والأنسجة والنقوش.', icon: SwatchBook, tag: 'مكتبة فنية', status: 'قيد التخطيط' },
-  { title: 'استوديو الألوان', desc: 'كوّن لوحات لونية واحفظ تركيباتك.', icon: Palette, tag: 'تصميم', status: 'قيد التخطيط' },
+  { title: 'استوديو الألوان', desc: 'استخرج الألوان من الصور وكون لوحاتك واحفظها.', icon: Palette, tag: 'تصميم', status: 'متاح الآن' },
   { title: 'التجربة الافتراضية', desc: 'جرّب تنسيقات الملابس على صورتك أو بالكاميرا.', icon: Sparkles, tag: 'تجربة تفاعلية', status: 'ضمن الخطة' },
 ]
 
@@ -59,6 +60,7 @@ function App() {
     { id: 'disciplines', label: 'المجالات الفنية', icon: Shapes },
     { id: 'tools', label: 'أدوات المختبر', icon: WandSparkles },
     { id: 'moodboard', label: 'لوحة الإلهام', icon: Grid2X2 },
+    { id: 'color-studio', label: 'استوديو الألوان', icon: Palette },
     { id: 'projects', label: 'مشروعاتي', icon: FolderKanban },
     { id: 'roadmap', label: 'خطة التطوير', icon: BookOpen },
   ]
@@ -168,10 +170,12 @@ function App() {
 
           <section className="section-block tools-section" id="tools">
             <div className="section-heading"><div><div className="section-kicker">YOUR CREATIVE TOOLKIT</div><h2>أدوات المختبر</h2><p>مجموعة أدوات هتساعدك في كل خطوة من الفكرة إلى التنفيذ.</p></div><span className="planned-label"><span /> أدوات ضمن خطة التطوير</span></div>
-            <div className="tools-grid">{tools.map((tool, i) => { const Icon = tool.icon; const available = tool.title === 'لوحة الإلهام'; return <article className={`tool-card ${available ? 'tool-card-available' : ''}`} key={tool.title}><div className="tool-icon"><Icon size={20} /></div><div className="tool-tag">{tool.tag}</div><h3>{tool.title}</h3><p>{tool.desc}</p><div className="tool-bottom"><span className={available ? 'tool-status tool-status-live' : 'tool-status'}>{tool.status}</span>{available ? <button className="tool-launch" onClick={() => goTo('moodboard')}>فتح الأداة <ArrowUpLeft size={13} /></button> : <span className="tool-number">0{i + 1}</span>}</div></article> })}</div>
+            <div className="tools-grid">{tools.map((tool, i) => { const Icon = tool.icon; const available = ['لوحة الإلهام', 'استوديو الألوان'].includes(tool.title); return <article className={`tool-card ${available ? 'tool-card-available' : ''}`} key={tool.title}><div className="tool-icon"><Icon size={20} /></div><div className="tool-tag">{tool.tag}</div><h3>{tool.title}</h3><p>{tool.desc}</p><div className="tool-bottom"><span className={available ? 'tool-status tool-status-live' : 'tool-status'}>{tool.status}</span>{available ? <button className="tool-launch" onClick={() => goTo(tool.title === 'لوحة الإلهام' ? 'moodboard' : 'color-studio')}>فتح الأداة <ArrowUpLeft size={13} /></button> : <span className="tool-number">0{i + 1}</span>}</div></article> })}</div>
           </section>
 
           <MoodboardSection user={user} onNotice={setNotice} />
+
+          <ColorStudioSection user={user} onNotice={setNotice} />
 
           <ProfileSection onNotice={setNotice} />
 
