@@ -32,17 +32,17 @@ const tools = [
   { id: 'moodboard', title: 'لوحة الإلهام', desc: 'اجمع المراجع والألوان والصور في مساحة واحدة.', icon: Grid2X2, tag: 'تنظيم بصري', status: 'متاح الآن' },
   { id: 'materials-library', title: 'مكتبة الخامات', desc: 'استكشف الخامات والأنسجة والنقوش.', icon: SwatchBook, tag: 'مكتبة فنية', status: 'متاح الآن' },
   { id: 'color-studio', title: 'استوديو الألوان', desc: 'استخرج الألوان من الصور وكون لوحاتك واحفظها.', icon: Palette, tag: 'تصميم', status: 'متاح الآن' },
-  { id: 'virtual-try-on', title: 'التجربة الافتراضية', desc: 'جهّز صورة مرجعية، اختر إطلالة، واحفظ جلسة التنسيق.', icon: Sparkles, tag: 'تجربة تفاعلية', status: 'نسخة أولية' },
+  { id: 'virtual-try-on', title: 'التجربة الافتراضية', desc: 'جرّب قطعة ملابس على بث الكاميرا مباشرة باستخدام محرك Decart.', icon: Sparkles, tag: 'تجربة بالذكاء الاصطناعي', status: 'يتطلب مفتاح Decart' },
 ]
 
 const roadmap = [
   { n: '01', title: 'تأسيس المختبر والحسابات', desc: 'الهوية والواجهة العربية والتسجيل والدخول والملف الشخصي.', state: 'مكتمل', done: true },
   { n: '02', title: 'إدارة المشروعات', desc: 'إنشاء المشروعات وتعديلها وحذفها وحفظ بياناتها في Firestore.', state: 'مكتمل', done: true },
   { n: '03', title: 'معرض الوسائط والملفات', desc: 'رفع الصور والفيديوهات ومعاينتها وتصنيفها والبحث والتنزيل.', state: 'مكتمل', done: true },
-  { n: '04', title: 'معمل التصميم', desc: 'لوحة الإلهام واستوديو الألوان جاهزان، والخطوة التالية مكتبة الخامات.', state: 'جاري التنفيذ', active: true },
-  { n: '05', title: 'مساعد الذكاء الاصطناعي', desc: 'توليد الأفكار والتصميمات وتحليلها عبر مزود قابل للتبديل.', state: 'مخطط' },
+  { n: '04', title: 'معمل التصميم', desc: 'لوحة الإلهام واستوديو الألوان ومكتبة الخامات ومولّد الأفكار ومحلل التصميم متاحة.', state: 'مكتمل مبدئياً', done: true },
+  { n: '05', title: 'مساعد الذكاء الاصطناعي', desc: 'التوليد الحالي محلي؛ الربط بنموذج AI وتحليل نقدي فني ما زالا قيد التطوير.', state: 'جاري التنفيذ', active: true },
   { n: '06', title: 'أدوات المجالات الفنية', desc: 'أدوات متخصصة للملابس والتربية الفنية والتصميم الرقمي والزخرفة.', state: 'مخطط' },
-  { n: '07', title: 'التجربة الافتراضية', desc: 'دمج تجربة الملابس وتوثيق نتائجها داخل المشروع.', state: 'مخطط' },
+  { n: '07', title: 'التجربة الافتراضية', desc: 'اختيار الإطلالات وحفظ الجلسات متاح؛ توليد ارتداء واقعي ما زال مطلوباً.', state: 'قيد التطوير' },
   { n: '08', title: 'التقييم والتحليلات', desc: 'التقييم الفني والاختبارات ومؤشرات الانخراط والتقارير.', state: 'مخطط' },
   { n: '09', title: 'الإدارة والإطلاق', desc: 'الصلاحيات والأمان والاختبارات وتحسين الأداء والنشر.', state: 'مخطط' },
 ]
@@ -196,7 +196,7 @@ function App() {
           {active === 'color-studio' && <ColorStudioSection user={user} onNotice={setNotice} />}
 
           {active === 'materials-library' && <MaterialsLibrarySection user={user} onNotice={setNotice} />}
-          {active === 'idea-generator' && <IdeaGeneratorSection onNotice={setNotice} />}
+          {active === 'idea-generator' && <IdeaGeneratorSection user={user} onNotice={setNotice} />}
           {active === 'design-analyzer' && <DesignAnalyzerSection onNotice={setNotice} />}
           {active === 'virtual-try-on' && <VirtualTryOnSection user={user} onNotice={setNotice} />}
 
