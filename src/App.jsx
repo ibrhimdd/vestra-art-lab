@@ -6,6 +6,7 @@ import AuthScreen from './components/AuthScreen'
 import ProjectsSection from './components/ProjectsSection'
 import MoodboardSection from './components/MoodboardSection'
 import ColorStudioSection from './components/ColorStudioSection'
+import MaterialsLibrarySection from './components/MaterialsLibrarySection'
 import ProfileSection from './components/ProfileSection'
 import {
   Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
@@ -26,7 +27,7 @@ const tools = [
   { id: 'idea-generator', title: 'مولّد الأفكار', desc: 'حوّل وصفك إلى اتجاهات إبداعية أولية.', icon: WandSparkles, tag: 'ذكاء اصطناعي', status: 'قريباً' },
   { id: 'design-analyzer', title: 'محلل التصميم', desc: 'احصل على ملاحظات حول التكوين والألوان.', icon: Activity, tag: 'تحليل ذكي', status: 'قريباً' },
   { id: 'moodboard', title: 'لوحة الإلهام', desc: 'اجمع المراجع والألوان والصور في مساحة واحدة.', icon: Grid2X2, tag: 'تنظيم بصري', status: 'متاح الآن' },
-  { id: 'materials-library', title: 'مكتبة الخامات', desc: 'استكشف الخامات والأنسجة والنقوش.', icon: SwatchBook, tag: 'مكتبة فنية', status: 'قيد التخطيط' },
+  { id: 'materials-library', title: 'مكتبة الخامات', desc: 'استكشف الخامات والأنسجة والنقوش.', icon: SwatchBook, tag: 'مكتبة فنية', status: 'متاح الآن' },
   { id: 'color-studio', title: 'استوديو الألوان', desc: 'استخرج الألوان من الصور وكون لوحاتك واحفظها.', icon: Palette, tag: 'تصميم', status: 'متاح الآن' },
   { id: 'virtual-try-on', title: 'التجربة الافتراضية', desc: 'جرّب تنسيقات الملابس على صورتك أو بالكاميرا.', icon: Sparkles, tag: 'تجربة تفاعلية', status: 'ضمن الخطة' },
 ]
@@ -190,6 +191,8 @@ function App() {
           </>}{active === 'moodboard' && <MoodboardSection user={user} onNotice={setNotice} />}
 
           {active === 'color-studio' && <ColorStudioSection user={user} onNotice={setNotice} />}
+
+          {active === 'materials-library' && <MaterialsLibrarySection user={user} onNotice={setNotice} />}
 
           {active === 'profile' && <ProfileSection onNotice={setNotice} />}
 
