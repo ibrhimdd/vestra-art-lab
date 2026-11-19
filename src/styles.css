@@ -503,3 +503,5 @@ html{scroll-padding-top:84px}
 .pattern-saved-grid article>div button:last-child{color:#d79c8f}
 @media(max-width:900px){.pattern-workspace{grid-template-columns:1fr}.pattern-preview-panel{order:0}.pattern-controls{order:1}}
 @media(max-width:600px){.pattern-saved-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pattern-preview-footer{font-size:8px}.pattern-export-actions{flex-direction:column}.pattern-color-grid{gap:7px}}
+
+.route-loading{min-height:260px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:12px;background:#171d19;color:#b6cc94;font-size:12px}
