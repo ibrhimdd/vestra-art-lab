@@ -32,7 +32,7 @@ const tools = [
   { id: 'moodboard', title: 'لوحة الإلهام', desc: 'اجمع المراجع والألوان والصور في مساحة واحدة.', icon: Grid2X2, tag: 'تنظيم بصري', status: 'متاح الآن' },
   { id: 'materials-library', title: 'مكتبة الخامات', desc: 'استكشف الخامات والأنسجة والنقوش.', icon: SwatchBook, tag: 'مكتبة فنية', status: 'متاح الآن' },
   { id: 'color-studio', title: 'استوديو الألوان', desc: 'استخرج الألوان من الصور وكون لوحاتك واحفظها.', icon: Palette, tag: 'تصميم', status: 'متاح الآن' },
-  { id: 'virtual-try-on', title: 'التجربة الافتراضية', desc: 'جهّز صورة مرجعية، اختر إطلالة، واحفظ جلسة التنسيق.', icon: Sparkles, tag: 'تجربة تفاعلية', status: 'نسخة أولية' },
+  { id: 'virtual-try-on', title: 'التجربة الافتراضية', desc: 'جرّب قطعة ملابس على بث الكاميرا مباشرة باستخدام محرك Decart.', icon: Sparkles, tag: 'تجربة بالذكاء الاصطناعي', status: 'يتطلب مفتاح Decart' },
 ]
 
 const roadmap = [
