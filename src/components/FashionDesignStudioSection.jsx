@@ -40,8 +40,8 @@ function garmentPath(type) {
 
 function garmentSvg(design) {
   const path = garmentPath(design.garment)
-  const neck = design.neckline === 'V' ? 'M125 68 L145 105 L165 68' : design.neckline === 'مربع' ? 'M125 70 V95 H165 V70' : 'M125 68 Q145 105 165 68'
-  const sleeveLine = design.sleeve === 'طويل' ? '<path d="M86 104L48 225L72 238L111 145 M204 104L242 225L218 238L179 145" fill="url(#fabricPattern)" stroke="#b6c59c" stroke-width="2"/>' : ''
+  const neck = design.garment === 'trousers' ? '' : design.neckline === 'V' ? 'M125 68 L145 105 L165 68' : design.neckline === 'مربع' ? 'M125 70 V95 H165 V70' : 'M125 68 Q145 105 165 68'
+  const sleeveLine = design.garment !== 'trousers' && design.sleeve === 'طويل' ? '<path d="M86 104L48 225L72 238L111 145 M204 104L242 225L218 238L179 145" fill="url(#fabricPattern)" stroke="#b6c59c" stroke-width="2"/>' : ''
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 410" role="img"><defs>${patternMarkup(design.pattern)}</defs><ellipse cx="145" cy="370" rx="95" ry="12" fill="#0c120e" opacity=".35"/><path d="${path}" fill="url(#fabricPattern)" stroke="#dce8c8" stroke-width="2.5" stroke-linejoin="round"/>${sleeveLine}<path d="${neck}" fill="none" stroke="#dce8c8" stroke-width="3" stroke-linecap="round"/>${design.garment === 'jacket' || design.garment === 'shirt' ? '<path d="M145 102V335" stroke="#dce8c8" stroke-width="2" stroke-dasharray="3 5"/><circle cx="139" cy="155" r="2.5" fill="#e8e9d8"/><circle cx="151" cy="195" r="2.5" fill="#e8e9d8"/>' : ''}<text x="145" y="395" text-anchor="middle" fill="#9aa88e" font-size="9" letter-spacing="2">VESTRA / DESIGN STUDY</text></svg>`
 }
 
