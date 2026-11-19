@@ -22,6 +22,7 @@ export default function MaterialsLibrarySection({ user, onNotice }) {
   const [preview, setPreview] = useState(null)
   const [imageFile, setImageFile] = useState(null)
   const fileRef = useRef(null)
+  useEffect(() => () => { if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview) }, [preview])
 
   useEffect(() => {
     let alive = true
