@@ -55,7 +55,7 @@ const routeTitles = { overview: 'نظرة عامة', disciplines: 'المجال�
 'materials-library': 'مكتبة الخامات', 'color-studio': 'استوديو الألوان', 'virtual-try-on': 'التجربة الافتراضية',
 projects: 'مشروعاتي وملفاتي', roadmap: 'خطة التطوير', profile: 'ملفي الشخصي',
 'discipline-fashion': 'الملابس والنسيج', 'discipline-art': 'التربية الفنية', 'discipline-digital': 'التصميم الرقمي', 'discipline-decor': 'الفنون الزخرفية' };
-function getRouteFromPath(path) { const normalized = path.length > 1 ? path.replace(/\\/$/, '') : path; return Object.keys(routePaths).find(key => routePaths[key] === normalized) || 'overview'; }
+function getRouteFromPath(path) { const normalized = path.length > 1 ? (path.endsWith('/') ? path.slice(0, -1) : path) : path; return Object.keys(routePaths).find(key => routePaths[key] === normalized) || 'overview'; }
 function App() {
   const [active, setActive] = useState(() => getRouteFromPath(window.location.pathname))
   const [menuOpen, setMenuOpen] = useState(false)
@@ -134,7 +134,7 @@ function App() {
         </nav>
         <div className="side-divider" />
         <div className="side-label">حسابك</div>
-        <button className="nav-item" onClick={() => goTo('profile')}><GraduationCap size={18} /><span>ملفي الشخصي</span></button>
+        <button className={active === 'profile' ? 'nav-item active' : 'nav-item'} onClick={() => goTo('profile')}><GraduationCap size={18} /><span>ملفي الشخصي</span></button>
         <button className="nav-item" onClick={() => setNotice('سيتم إعداد الإعدادات بعد ربط الخدمات.')}><Settings2 size={18} /><span>الإعدادات</span></button>
         <div className="sidebar-bottom">
           <div className="help-card"><div className="help-icon"><CircleHelp size={18} /></div><strong>مساحة للإبداع بلا حدود</strong><p>ابدأ بفكرة صغيرة، وطورها خطوة بخطوة.</p><span>اكتشف المختبر <ArrowLeft size={13} /></span></div>
@@ -178,12 +178,12 @@ function App() {
 
           </>}{active === 'disciplines' && <><section className="section-block" id="disciplines">
             <div className="section-heading"><div><div className="section-kicker">EXPLORE YOUR FIELD</div><h2>اختر مجال إبداعك</h2><p>كل مجال يفتح لك مجموعة مختلفة من الأدوات والتجارب.</p></div><button className="text-link" onClick={() => setNotice('سيتم تفعيل صفحات المجالات بالتدريج.')}>كل المجالات <ArrowLeft size={15} /></button></div>
-            <div className="discipline-grid">{disciplines.map((d, i) => { const Icon = d.icon; return <button key={d.id} className={`discipline-card ${d.tone} ${selectedDiscipline === d.id ? 'chosen' : ''}`} onClick={() => goTo('discipline-' + d.id)}><div className="discipline-top"><div className="discipline-icon"><Icon size={22} /></div><span className="discipline-number">0{i + 1}</span></div><div className="discipline-en">{d.en}</div><h3>{d.title}</h3><p>{d.desc}</p><div className="discipline-foot"><span>{d.count}</span><span className="round-arrow"><ArrowUpLeft size={16} /></span></div></button> })}</div>
+            <div className="discipline-grid">{disciplines.map((d, i) => { const Icon = d.icon; return <button key={d.id} className={`discipline-card ${d.tone} ${''}`} onClick={() => goTo('discipline-' + d.id)}><div className="discipline-top"><div className="discipline-icon"><Icon size={22} /></div><span className="discipline-number">0{i + 1}</span></div><div className="discipline-en">{d.en}</div><h3>{d.title}</h3><p>{d.desc}</p><div className="discipline-foot"><span>{d.count}</span><span className="round-arrow"><ArrowUpLeft size={16} /></span></div></button> })}</div>
           </section>
 
           </>}{active === 'tools' && <><section className="section-block tools-section" id="tools">
             <div className="section-heading"><div><div className="section-kicker">YOUR CREATIVE TOOLKIT</div><h2>أدوات المختبر</h2><p>مجموعة أدوات هتساعدك في كل خطوة من الفكرة إلى التنفيذ.</p></div><span className="planned-label"><span /> أدوات ضمن خطة التطوير</span></div>
-            <div className="tools-grid">{tools.map((tool, i) => { const Icon = tool.icon; const available = ['لوحة الإلهام', 'استوديو الألوان'].includes(tool.title); return <article className={`tool-card ${available ? 'tool-card-available' : ''}`} key={tool.title}><div className="tool-icon"><Icon size={20} /></div><div className="tool-tag">{tool.tag}</div><h3>{tool.title}</h3><p>{tool.desc}</p><div className="tool-bottom"><span className={available ? 'tool-status tool-status-live' : 'tool-status'}>{tool.status}</span>{available ? <button className="tool-launch" onClick={() => goTo(tool.title === 'لوحة الإلهام' ? 'moodboard' : 'color-studio')}>فتح الأداة <ArrowUpLeft size={13} /></button> : <span className="tool-number">0{i + 1}</span>}</div></article> })}</div>
+            <div className="tools-grid">{tools.map((tool, i) => { const Icon = tool.icon; const available = tool.status === 'متاح الآن'; return <button type="button" onClick={() => goTo(tool.id)} className={`tool-card ${available ? 'tool-card-available' : ''}`} key={tool.title}><div className="tool-icon"><Icon size={20} /></div><div className="tool-tag">{tool.tag}</div><h3>{tool.title}</h3><p>{tool.desc}</p><div className="tool-bottom"><span className={available ? 'tool-status tool-status-live' : 'tool-status'}>{tool.status}</span>{available ? <span className="tool-launch">فتح الصفحة <ArrowUpLeft size={13} /></span> : <span className="tool-number">0{i + 1}</span>}</div></button> })}</div>
           </section>
 
           </>}{active === 'moodboard' && <MoodboardSection user={user} onNotice={setNotice} />}
