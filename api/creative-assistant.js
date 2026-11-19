@@ -103,7 +103,7 @@ export default async function handler(req, res) {
       return res.status(503).json({ error: 'المساعد الذكي غير مهيأ بعد. أضف إعدادات مزود الذكاء الاصطناعي في Vercel.' })
     }
 
-    const endpoint = `${baseUrl.replace(/\\/+$/, '')}/chat/completions`
+    const endpoint = `${baseUrl.replace(/\/+$/, '')}/chat/completions`
     const messages = [
       { role: 'system', content: prompt.system },
       { role: 'user', content: prompt.user.slice(0, MAX_TEXT) },
