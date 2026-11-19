@@ -675,3 +675,93 @@ html{scroll-padding-top:84px}
 .fashion-texture-tools>label{display:grid;gap:5px;color:#aab5a6;font-size:9px}
 .fashion-texture-tools input[type=range]{width:100%;accent-color:var(--lime)}
 .fashion-texture-tools>small{color:#e3a99a;font-size:9px;line-height:1.6}
+
+
+/* AI-assisted creative tools */
+.idea-ai-generate,
+.analyzer-ai-panel > button {
+  width: 100%;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid rgba(0, 109, 119, .24);
+  border-radius: 13px;
+  background: linear-gradient(120deg, #006D77, #2B8790);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+}
+.idea-ai-generate:hover,
+.analyzer-ai-panel > button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 109, 119, .18);
+}
+.idea-ai-generate:disabled,
+.analyzer-ai-panel > button:disabled {
+  cursor: wait;
+  opacity: .65;
+  transform: none;
+}
+.idea-ai-output,
+.analyzer-ai-output {
+  margin: 18px 0;
+  padding: 18px;
+  border: 1px solid rgba(0, 109, 119, .14);
+  border-radius: 16px;
+  background: #f4f9f8;
+  color: #263b3d;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.analyzer-ai-panel {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid rgba(0, 109, 119, .16);
+  border-radius: 18px;
+  background: rgba(237, 246, 249, .62);
+}
+.analyzer-ai-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #006D77;
+}
+.analyzer-ai-heading span {
+  margin-inline-start: auto;
+  font-size: 10px;
+  letter-spacing: .12em;
+  opacity: .6;
+}
+.analyzer-ai-panel label {
+  display: grid;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.analyzer-ai-panel select,
+.analyzer-ai-panel textarea {
+  width: 100%;
+  border: 1px solid #d6e3e2;
+  border-radius: 10px;
+  padding: 11px 12px;
+  background: #fff;
+  color: #263b3d;
+  font: inherit;
+  outline-color: #006D77;
+}
+.analyzer-ai-panel small {
+  color: #607577;
+  line-height: 1.7;
+}
+@media (max-width: 640px) {
+  .idea-ai-output,
+  .analyzer-ai-output { padding: 13px; font-size: 13px; }
+  .analyzer-ai-panel { padding: 13px; }
+}
