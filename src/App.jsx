@@ -35,7 +35,7 @@ const roadmap = [
   { n: '01', title: 'تأسيس المختبر والحسابات', desc: 'الهوية والواجهة العربية والتسجيل والدخول والملف الشخصي.', state: 'مكتمل', done: true },
   { n: '02', title: 'إدارة المشروعات', desc: 'إنشاء المشروعات وتعديلها وحذفها وحفظ بياناتها في Firestore.', state: 'مكتمل', done: true },
   { n: '03', title: 'معرض الوسائط والملفات', desc: 'رفع الصور والفيديوهات ومعاينتها وتصنيفها والبحث والتنزيل.', state: 'مكتمل', done: true },
-  { n: '04', title: 'معمل التصميم', desc: 'بدأنا بلوحة الإلهام، تليها استوديو الألوان ومكتبة الخامات.', state: 'جاري التنفيذ', active: true },
+  { n: '04', title: 'معمل التصميم', desc: 'لوحة الإلهام واستوديو الألوان جاهزان، والخطوة التالية مكتبة الخامات.', state: 'جاري التنفيذ', active: true },
   { n: '05', title: 'مساعد الذكاء الاصطناعي', desc: 'توليد الأفكار والتصميمات وتحليلها عبر مزود قابل للتبديل.', state: 'مخطط' },
   { n: '06', title: 'أدوات المجالات الفنية', desc: 'أدوات متخصصة للملابس والتربية الفنية والتصميم الرقمي والزخرفة.', state: 'مخطط' },
   { n: '07', title: 'التجربة الافتراضية', desc: 'دمج تجربة الملابس وتوثيق نتائجها داخل المشروع.', state: 'مخطط' },
@@ -178,8 +178,8 @@ function App() {
           </section>
 
           </>}{active === 'disciplines' && <><section className="section-block" id="disciplines">
-            <div className="section-heading"><div><div className="section-kicker">EXPLORE YOUR FIELD</div><h2>اختر مجال إبداعك</h2><p>كل مجال يفتح لك مجموعة مختلفة من الأدوات والتجارب.</p></div><button className="text-link" onClick={() => setNotice('سيتم تفعيل صفحات المجالات بالتدريج.')}>كل المجالات <ArrowLeft size={15} /></button></div>
-            <div className="discipline-grid">{disciplines.map((d, i) => { const Icon = d.icon; return <button key={d.id} className={`discipline-card ${d.tone} ${''}`} onClick={() => goTo('discipline-' + d.id)}><div className="discipline-top"><div className="discipline-icon"><Icon size={22} /></div><span className="discipline-number">0{i + 1}</span></div><div className="discipline-en">{d.en}</div><h3>{d.title}</h3><p>{d.desc}</p><div className="discipline-foot"><span>{d.count}</span><span className="round-arrow"><ArrowUpLeft size={16} /></span></div></button> })}</div>
+            <div className="section-heading"><div><div className="section-kicker">EXPLORE YOUR FIELD</div><h2>اختر مجال إبداعك</h2><p>كل مجال يفتح لك مجموعة مختلفة من الأدوات والتجارب.</p></div><button className="text-link" onClick={() => goTo('disciplines')}>كل المجالات <ArrowLeft size={15} /></button></div>
+            <div className="discipline-grid">{disciplines.map((d, i) => { const Icon = d.icon; return <button key={d.id} className={`discipline-card ${d.tone}`} onClick={() => goTo('discipline-' + d.id)}><div className="discipline-top"><div className="discipline-icon"><Icon size={22} /></div><span className="discipline-number">0{i + 1}</span></div><div className="discipline-en">{d.en}</div><h3>{d.title}</h3><p>{d.desc}</p><div className="discipline-foot"><span>{d.count}</span><span className="round-arrow"><ArrowUpLeft size={16} /></span></div></button> })}</div>
           </section>
 
           </>}{active === 'tools' && <><section className="section-block tools-section" id="tools">
