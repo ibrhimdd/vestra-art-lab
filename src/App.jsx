@@ -10,11 +10,12 @@ import MaterialsLibrarySection from './components/MaterialsLibrarySection'
 import IdeaGeneratorSection from './components/IdeaGeneratorSection'
 import DesignAnalyzerSection from './components/DesignAnalyzerSection'
 import VirtualTryOnSection from './components/VirtualTryOnSection'
+import PatternExplorerSection from './components/PatternExplorerSection'
 import ProfileSection from './components/ProfileSection'
 import {
   Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
   ChevronDown, ChevronLeft, CircleHelp, CloudUpload, Compass,
-  FileImage, FolderKanban, Gem, GraduationCap, Grid2X2, Layers3,
+  FileImage, FolderKanban, Gem, GraduationCap, Grid2X2, Grid3X3, Layers3,
   Lightbulb, Menu, Palette, Plus, Search, Settings2, Shapes,
   Sparkles, SwatchBook, WandSparkles, X, LogOut
 } from 'lucide-react'
@@ -32,6 +33,7 @@ const tools = [
   { id: 'moodboard', title: 'لوحة الإلهام', desc: 'اجمع المراجع والألوان والصور في مساحة واحدة.', icon: Grid2X2, tag: 'تنظيم بصري', status: 'متاح الآن' },
   { id: 'materials-library', title: 'مكتبة الخامات', desc: 'استكشف الخامات والأنسجة والنقوش.', icon: SwatchBook, tag: 'مكتبة فنية', status: 'متاح الآن' },
   { id: 'color-studio', title: 'استوديو الألوان', desc: 'استخرج الألوان من الصور وكون لوحاتك واحفظها.', icon: Palette, tag: 'تصميم', status: 'متاح الآن' },
+  { id: 'pattern-explorer', title: 'مستكشف النقوش', desc: 'أنشئ وحدات زخرفية متكررة وصدّرها بصيغ SVG وPNG.', icon: Grid3X3, tag: 'زخرفة وأنماط', status: 'متاح الآن' },
   { id: 'virtual-try-on', title: 'التجربة الافتراضية', desc: 'جرّب قطعة ملابس على بث الكاميرا مباشرة باستخدام محرك Decart.', icon: Sparkles, tag: 'تجربة بالذكاء الاصطناعي', status: 'يتطلب مفتاح Decart' },
 ]
 
@@ -39,7 +41,7 @@ const roadmap = [
   { n: '01', title: 'تأسيس المختبر والحسابات', desc: 'الهوية والواجهة العربية والتسجيل والدخول والملف الشخصي.', state: 'مكتمل', done: true },
   { n: '02', title: 'إدارة المشروعات', desc: 'إنشاء المشروعات وتعديلها وحذفها وحفظ بياناتها في Firestore.', state: 'مكتمل', done: true },
   { n: '03', title: 'معرض الوسائط والملفات', desc: 'رفع الصور والفيديوهات ومعاينتها وتصنيفها والبحث والتنزيل.', state: 'مكتمل', done: true },
-  { n: '04', title: 'معمل التصميم', desc: 'لوحة الإلهام واستوديو الألوان ومكتبة الخامات ومولّد الأفكار ومحلل التصميم متاحة.', state: 'مكتمل مبدئياً', done: true },
+  { n: '04', title: 'معمل التصميم', desc: 'لوحة الإلهام واستوديو الألوان ومكتبة الخامات ومستكشف النقوش متاحة.', state: 'مكتمل مبدئياً', done: true },
   { n: '05', title: 'مساعد الذكاء الاصطناعي', desc: 'التوليد الحالي محلي؛ الربط بنموذج AI وتحليل نقدي فني ما زالا قيد التطوير.', state: 'جاري التنفيذ', active: true },
   { n: '06', title: 'أدوات المجالات الفنية', desc: 'أدوات متخصصة للملابس والتربية الفنية والتصميم الرقمي والزخرفة.', state: 'مخطط' },
   { n: '07', title: 'التجربة الافتراضية', desc: 'اختيار الإطلالات وحفظ الجلسات متاح؛ توليد ارتداء واقعي ما زال مطلوباً.', state: 'قيد التطوير' },
@@ -50,13 +52,13 @@ const roadmap = [
 const routePaths = { overview: '/', disciplines: '/disciplines', tools: '/tools',
 'idea-generator': '/tools/idea-generator', 'design-analyzer': '/tools/design-analyzer',
 moodboard: '/tools/moodboard', 'materials-library': '/tools/materials-library',
-'color-studio': '/tools/color-studio', 'virtual-try-on': '/tools/virtual-try-on',
+'color-studio': '/tools/color-studio', 'virtual-try-on': '/tools/virtual-try-on', 'pattern-explorer': '/tools/pattern-explorer',
 projects: '/projects', roadmap: '/roadmap', profile: '/profile',
 'discipline-fashion': '/disciplines/fashion', 'discipline-art': '/disciplines/art',
 'discipline-digital': '/disciplines/digital', 'discipline-decor': '/disciplines/decor' };
 const routeTitles = { overview: 'نظرة عامة', disciplines: 'المجالات الفنية', tools: 'أدوات المختبر',
 'idea-generator': 'مولّد الأفكار', 'design-analyzer': 'محلل التصميم', moodboard: 'لوحة الإلهام',
-'materials-library': 'مكتبة الخامات', 'color-studio': 'استوديو الألوان', 'virtual-try-on': 'التجربة الافتراضية',
+'materials-library': 'مكتبة الخامات', 'color-studio': 'استوديو الألوان', 'virtual-try-on': 'التجربة الافتراضية', 'pattern-explorer': 'مستكشف النقوش',
 projects: 'مشروعاتي وملفاتي', roadmap: 'خطة التطوير', profile: 'ملفي الشخصي',
 'discipline-fashion': 'الملابس والنسيج', 'discipline-art': 'التربية الفنية', 'discipline-digital': 'التصميم الرقمي', 'discipline-decor': 'الفنون الزخرفية' };
 function getRouteFromPath(path) { const normalized = path.length > 1 ? (path.endsWith('/') ? path.slice(0, -1) : path) : path; return Object.keys(routePaths).find(key => routePaths[key] === normalized) || 'overview'; }
@@ -199,6 +201,7 @@ function App() {
           {active === 'idea-generator' && <IdeaGeneratorSection user={user} onNotice={setNotice} />}
           {active === 'design-analyzer' && <DesignAnalyzerSection onNotice={setNotice} />}
           {active === 'virtual-try-on' && <VirtualTryOnSection user={user} onNotice={setNotice} />}
+          {active === 'pattern-explorer' && <PatternExplorerSection user={user} onNotice={setNotice} />}
 
           {active === 'profile' && <ProfileSection onNotice={setNotice} />}
 
