@@ -1,17 +1,8 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from './lib/firebase'
 import { useAuth } from './lib/AuthContext'
 import AuthScreen from './components/AuthScreen'
-import ProjectsSection from './components/ProjectsSection'
-import MoodboardSection from './components/MoodboardSection'
-import ColorStudioSection from './components/ColorStudioSection'
-import MaterialsLibrarySection from './components/MaterialsLibrarySection'
-import IdeaGeneratorSection from './components/IdeaGeneratorSection'
-import DesignAnalyzerSection from './components/DesignAnalyzerSection'
-import VirtualTryOnSection from './components/VirtualTryOnSection'
-import PatternExplorerSection from './components/PatternExplorerSection'
-import ProfileSection from './components/ProfileSection'
 import {
   Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
   ChevronDown, ChevronLeft, CircleHelp, CloudUpload, Compass,
@@ -19,6 +10,17 @@ import {
   Lightbulb, Menu, Palette, Plus, Search, Settings2, Shapes,
   Sparkles, SwatchBook, WandSparkles, X, LogOut
 } from 'lucide-react'
+
+const ProjectsSection = lazy(() => import('./components/ProjectsSection'))
+const MoodboardSection = lazy(() => import('./components/MoodboardSection'))
+const ColorStudioSection = lazy(() => import('./components/ColorStudioSection'))
+const MaterialsLibrarySection = lazy(() => import('./components/MaterialsLibrarySection'))
+const IdeaGeneratorSection = lazy(() => import('./components/IdeaGeneratorSection'))
+const DesignAnalyzerSection = lazy(() => import('./components/DesignAnalyzerSection'))
+const VirtualTryOnSection = lazy(() => import('./components/VirtualTryOnSection'))
+const PatternExplorerSection = lazy(() => import('./components/PatternExplorerSection'))
+const ProfileSection = lazy(() => import('./components/ProfileSection'))
+
 
 const disciplines = [
   { id: 'fashion', title: 'الملابس والنسيج', en: 'FASHION & TEXTILE', desc: 'ابتكر الأزياء، جرّب الألوان والنقوش، واستكشف تنسيقات جديدة.', icon: SwatchBook, tone: 'mint', count: '04 أدوات' },
@@ -193,19 +195,19 @@ function App() {
             <div className="tools-grid">{tools.map((tool, i) => { const Icon = tool.icon; const available = tool.status === 'متاح الآن'; return <button type="button" onClick={() => goTo(tool.id)} className={`tool-card ${available ? 'tool-card-available' : ''}`} key={tool.title}><div className="tool-icon"><Icon size={20} /></div><div className="tool-tag">{tool.tag}</div><h3>{tool.title}</h3><p>{tool.desc}</p><div className="tool-bottom"><span className={available ? 'tool-status tool-status-live' : 'tool-status'}>{tool.status}</span>{available ? <span className="tool-launch">فتح الصفحة <ArrowUpLeft size={13} /></span> : <span className="tool-number">0{i + 1}</span>}</div></button> })}</div>
           </section>
 
-          </>}{active === 'moodboard' && <MoodboardSection user={user} onNotice={setNotice} />}
+          </>}{active === 'moodboard' && <Suspense fallback={<div className="route-loading">جارٍ تحميل لوحة الإلهام...</div>}><MoodboardSection user={user} onNotice={setNotice} /></Suspense>}
 
-          {active === 'color-studio' && <ColorStudioSection user={user} onNotice={setNotice} />}
+          {active === 'color-studio' && <Suspense fallback={<div className="route-loading">جارٍ تحميل استوديو الألوان...</div>}><ColorStudioSection user={user} onNotice={setNotice} /></Suspense>}
 
-          {active === 'materials-library' && <MaterialsLibrarySection user={user} onNotice={setNotice} />}
-          {active === 'idea-generator' && <IdeaGeneratorSection user={user} onNotice={setNotice} />}
-          {active === 'design-analyzer' && <DesignAnalyzerSection onNotice={setNotice} />}
-          {active === 'virtual-try-on' && <VirtualTryOnSection user={user} onNotice={setNotice} />}
-          {active === 'pattern-explorer' && <PatternExplorerSection user={user} onNotice={setNotice} />}
+          {active === 'materials-library' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مكتبة الخامات...</div>}><MaterialsLibrarySection user={user} onNotice={setNotice} /></Suspense>}
+          {active === 'idea-generator' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مولّد الأفكار...</div>}><IdeaGeneratorSection user={user} onNotice={setNotice} /></Suspense>}
+          {active === 'design-analyzer' && <Suspense fallback={<div className="route-loading">جارٍ تحميل محلل التصميم...</div>}><DesignAnalyzerSection onNotice={setNotice} /></Suspense>}
+          {active === 'virtual-try-on' && <Suspense fallback={<div className="route-loading">جارٍ تحميل التجربة الافتراضية...</div>}><VirtualTryOnSection user={user} onNotice={setNotice} /></Suspense>}
+          {active === 'pattern-explorer' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مستكشف النقوش...</div>}><PatternExplorerSection user={user} onNotice={setNotice} /></Suspense>}
 
-          {active === 'profile' && <ProfileSection onNotice={setNotice} />}
+          {active === 'profile' && <Suspense fallback={<div className="route-loading">جارٍ تحميل الملف الشخصي...</div>}><ProfileSection onNotice={setNotice} /></Suspense>}
 
-          {active === 'projects' && <ProjectsSection onNotice={setNotice} />}
+          {active === 'projects' && <Suspense fallback={<div className="route-loading">جارٍ تحميل المشروعات...</div>}><ProjectsSection onNotice={setNotice} /></Suspense>}
 
           {active === 'roadmap' && <><section className="section-block roadmap-section" id="roadmap"><div className="section-heading"><div><div className="section-kicker">FROM IDEA TO REALITY</div><h2>رحلة بناء المختبر</h2><p>خطة واضحة للمراحل والوظائف التي سننفذها بالترتيب.</p></div><span className="roadmap-count">09 مراحل رئيسية</span></div><div className="roadmap-list">{roadmap.map((step, i) => <div className={`roadmap-item ${step.active ? 'current' : ''} ${step.done ? 'completed' : ''}`} key={step.n}><div className="roadmap-marker">{step.active || step.done ? <Check size={16} /> : step.n}</div><div className="roadmap-copy"><h3>{step.title}</h3><p>{step.desc}</p></div><span className="roadmap-state">{step.state}</span>{i !== roadmap.length - 1 && <div className="roadmap-connector" />}</div>)}</div></section>
 
