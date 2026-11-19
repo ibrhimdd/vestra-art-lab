@@ -79,24 +79,23 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
           signal: controller.signal,
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({
-          mode: 'critique', field, brief,
-          metrics: {
-            dimensions: `${analysis.width}×${analysis.height}`,
-            ratio: analysis.ratio,
-            brightness: analysis.brightness,
-            contrast: analysis.contrast,
-            colors: analysis.colors,
-          },
-        }),
-        }),
+            mode: 'critique', field, brief,
+            metrics: {
+              dimensions: `${analysis.width}×${analysis.height}`,
+              ratio: analysis.ratio,
+              brightness: analysis.brightness,
+              contrast: analysis.contrast,
+              colors: analysis.colors,
+            },
+          }),
         })
         const raw = await response.text()
         try { data = raw ? JSON.parse(raw) : {} } catch { data = { error: raw || 'استجابة غير مفهومة من الخادم.' } }
       } finally {
         clearTimeout(timeoutId)
       }
-      if (!response.ok) throw new Error(data.error || 'تعذر الحصول على رد من المساعد الذكي.')
       if (!response.ok) throw new Error(data.error || 'تعذر إنشاء المراجعة.')
+      if (!data.text) throw new Error('وصل رد فارغ من مزود الذكاء الاصطناعي.')
       setAiReview(data.text)
       onNotice?.('اكتملت المراجعة الإرشادية بالذكاء الاصطناعي.')
     } catch (err) {
