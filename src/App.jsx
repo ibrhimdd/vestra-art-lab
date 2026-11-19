@@ -141,7 +141,7 @@ function App() {
         <nav className="side-nav">
           {nav.map(item => {
             const Icon = item.icon
-            return <button key={item.id} className={(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio', 'materials-library', 'idea-generator', 'design-analyzer', 'fashion-studio', 'virtual-try-on'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) ? 'nav-item active' : 'nav-item'} onClick={() => goTo(item.id)}><Icon size={18} /><span>{item.label}</span>{(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) && <i />}</button>
+            return <button key={item.id} className={(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio', 'materials-library', 'idea-generator', 'design-analyzer', 'fashion-studio', 'virtual-try-on'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) ? 'nav-item active' : 'nav-item'} onClick={() => goTo(item.id)}><Icon size={18} /><span>{item.label}</span>{(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio', 'materials-library', 'idea-generator', 'design-analyzer', 'fashion-studio', 'virtual-try-on', 'pattern-explorer'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) && <i />}</button>
           })}
         </nav>
         <div className="side-divider" />
