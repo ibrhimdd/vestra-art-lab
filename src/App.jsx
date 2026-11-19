@@ -4,6 +4,7 @@ import { db } from './lib/firebase'
 import { useAuth } from './lib/AuthContext'
 import AuthScreen from './components/AuthScreen'
 import ProjectsSection from './components/ProjectsSection'
+import MoodboardSection from './components/MoodboardSection'
 import ProfileSection from './components/ProfileSection'
 import {
   Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
@@ -23,7 +24,7 @@ const disciplines = [
 const tools = [
   { title: 'مولّد الأفكار', desc: 'حوّل وصفك إلى اتجاهات إبداعية أولية.', icon: WandSparkles, tag: 'ذكاء اصطناعي', status: 'قريباً' },
   { title: 'محلل التصميم', desc: 'احصل على ملاحظات حول التكوين والألوان.', icon: Activity, tag: 'تحليل ذكي', status: 'قريباً' },
-  { title: 'لوحة الإلهام', desc: 'اجمع المراجع والألوان والصور في مساحة واحدة.', icon: Grid2X2, tag: 'تنظيم بصري', status: 'قيد التخطيط' },
+  { title: 'لوحة الإلهام', desc: 'اجمع المراجع والألوان والصور في مساحة واحدة.', icon: Grid2X2, tag: 'تنظيم بصري', status: 'متاح الآن' },
   { title: 'مكتبة الخامات', desc: 'استكشف الخامات والأنسجة والنقوش.', icon: SwatchBook, tag: 'مكتبة فنية', status: 'قيد التخطيط' },
   { title: 'استوديو الألوان', desc: 'كوّن لوحات لونية واحفظ تركيباتك.', icon: Palette, tag: 'تصميم', status: 'قيد التخطيط' },
   { title: 'التجربة الافتراضية', desc: 'جرّب تنسيقات الملابس على صورتك أو بالكاميرا.', icon: Sparkles, tag: 'تجربة تفاعلية', status: 'ضمن الخطة' },
@@ -32,8 +33,8 @@ const tools = [
 const roadmap = [
   { n: '01', title: 'تأسيس المختبر والحسابات', desc: 'الهوية والواجهة العربية والتسجيل والدخول والملف الشخصي.', state: 'مكتمل', done: true },
   { n: '02', title: 'إدارة المشروعات', desc: 'إنشاء المشروعات وتعديلها وحذفها وحفظ بياناتها في Firestore.', state: 'مكتمل', done: true },
-  { n: '03', title: 'معرض الوسائط والملفات', desc: 'رفع الصور والفيديوهات ومعاينتها وتصنيفها والبحث والتنزيل.', state: 'جاري التنفيذ', active: true },
-  { n: '04', title: 'معمل التصميم', desc: 'لوحات الإلهام والألوان والخامات وأدوات التحرير.', state: 'مخطط' },
+  { n: '03', title: 'معرض الوسائط والملفات', desc: 'رفع الصور والفيديوهات ومعاينتها وتصنيفها والبحث والتنزيل.', state: 'مكتمل', done: true },
+  { n: '04', title: 'معمل التصميم', desc: 'بدأنا بلوحة الإلهام، تليها استوديو الألوان ومكتبة الخامات.', state: 'جاري التنفيذ', active: true },
   { n: '05', title: 'مساعد الذكاء الاصطناعي', desc: 'توليد الأفكار والتصميمات وتحليلها عبر مزود قابل للتبديل.', state: 'مخطط' },
   { n: '06', title: 'أدوات المجالات الفنية', desc: 'أدوات متخصصة للملابس والتربية الفنية والتصميم الرقمي والزخرفة.', state: 'مخطط' },
   { n: '07', title: 'التجربة الافتراضية', desc: 'دمج تجربة الملابس وتوثيق نتائجها داخل المشروع.', state: 'مخطط' },
@@ -57,6 +58,7 @@ function App() {
     { id: 'overview', label: 'نظرة عامة', icon: Compass },
     { id: 'disciplines', label: 'المجالات الفنية', icon: Shapes },
     { id: 'tools', label: 'أدوات المختبر', icon: WandSparkles },
+    { id: 'moodboard', label: 'لوحة الإلهام', icon: Grid2X2 },
     { id: 'projects', label: 'مشروعاتي', icon: FolderKanban },
     { id: 'roadmap', label: 'خطة التطوير', icon: BookOpen },
   ]
@@ -156,7 +158,7 @@ function App() {
             <div className="stat-card"><div className="stat-icon mint"><GraduationCap size={19} /></div><div><strong>04</strong><span>مجالات فنية</span></div><small>تخصصات متنوعة</small></div>
             <div className="stat-card"><div className="stat-icon peach"><WandSparkles size={19} /></div><div><strong>06</strong><span>أدوات مخططة</span></div><small>تتوسع مع الوقت</small></div>
             <div className="stat-card"><div className="stat-icon lavender"><FolderKanban size={19} /></div><div><strong>∞</strong><span>أفكار ومشروعات</span></div><small>مساحة مفتوحة للإبداع</small></div>
-            <div className="stat-card progress-stat"><div className="stat-icon blue"><Activity size={19} /></div><div><strong>01 <small>/ 06</small></strong><span>مرحلة التأسيس</span></div><small className="progress-line"><i /></small></div>
+            <div className="stat-card progress-stat"><div className="stat-icon blue"><Activity size={19} /></div><div><strong>04 <small>/ 09</small></strong><span>معمل التصميم</span></div><small className="progress-line"><i /></small></div>
           </section>
 
           <section className="section-block" id="disciplines">
@@ -166,8 +168,10 @@ function App() {
 
           <section className="section-block tools-section" id="tools">
             <div className="section-heading"><div><div className="section-kicker">YOUR CREATIVE TOOLKIT</div><h2>أدوات المختبر</h2><p>مجموعة أدوات هتساعدك في كل خطوة من الفكرة إلى التنفيذ.</p></div><span className="planned-label"><span /> أدوات ضمن خطة التطوير</span></div>
-            <div className="tools-grid">{tools.map((tool, i) => { const Icon = tool.icon; return <article className="tool-card" key={tool.title}><div className="tool-icon"><Icon size={20} /></div><div className="tool-tag">{tool.tag}</div><h3>{tool.title}</h3><p>{tool.desc}</p><div className="tool-bottom"><span className="tool-status">{tool.status}</span><span className="tool-number">0{i + 1}</span></div></article> })}</div>
+            <div className="tools-grid">{tools.map((tool, i) => { const Icon = tool.icon; const available = tool.title === 'لوحة الإلهام'; return <article className={`tool-card ${available ? 'tool-card-available' : ''}`} key={tool.title}><div className="tool-icon"><Icon size={20} /></div><div className="tool-tag">{tool.tag}</div><h3>{tool.title}</h3><p>{tool.desc}</p><div className="tool-bottom"><span className={available ? 'tool-status tool-status-live' : 'tool-status'}>{tool.status}</span>{available ? <button className="tool-launch" onClick={() => goTo('moodboard')}>فتح الأداة <ArrowUpLeft size={13} /></button> : <span className="tool-number">0{i + 1}</span>}</div></article> })}</div>
           </section>
+
+          <MoodboardSection user={user} onNotice={setNotice} />
 
           <ProfileSection onNotice={setNotice} />
 
