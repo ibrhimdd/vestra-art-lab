@@ -80,9 +80,10 @@ export default function VirtualTryOnSection({ user, onNotice }) {
     setError('')
     setStatus('camera')
     try {
+      const model = models.realtime('lucy-vton-latest')
       const cameraStream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 } },
+        video: { facingMode: 'user', frameRate: model.fps, width: model.width, height: model.height },
       })
       streamRef.current = cameraStream
       if (localVideo.current) {
@@ -105,7 +106,7 @@ export default function VirtualTryOnSection({ user, onNotice }) {
 
       setStatus('connecting')
       const realtimeClient = await client.realtime.connect(cameraStream, {
-        model: models.realtime('lucy-vton-latest'),
+        model,
         onRemoteStream: async remoteStream => {
           if (outputVideo.current) {
             outputVideo.current.srcObject = remoteStream
