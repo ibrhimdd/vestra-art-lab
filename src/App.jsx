@@ -30,12 +30,15 @@ const tools = [
 ]
 
 const roadmap = [
-  { n: '01', title: 'تأسيس المختبر', desc: 'الهوية، الواجهة، الحسابات، ومساحة الطالب.', state: 'جاري العمل', active: true },
-  { n: '02', title: 'مساحة المشروعات', desc: 'إنشاء المشروعات وحفظ الملفات ومتابعة الإنجاز.', state: 'التالي' },
-  { n: '03', title: 'معمل التصميم', desc: 'لوحات الإلهام، الألوان، الخامات وأدوات التحرير.', state: 'مخطط' },
-  { n: '04', title: 'الذكاء الاصطناعي', desc: 'توليد التصميمات وتحليلها عبر مزود قابل للتبديل.', state: 'مخطط' },
-  { n: '05', title: 'التجربة الافتراضية', desc: 'دمج تجربة الملابس وتوثيق نتائجها.', state: 'مخطط' },
-  { n: '06', title: 'التقييم والتحليلات', desc: 'التقييم الفني والاختبارات ومؤشرات الانخراط.', state: 'مخطط' },
+  { n: '01', title: 'تأسيس المختبر والحسابات', desc: 'الهوية والواجهة العربية والتسجيل والدخول والملف الشخصي.', state: 'مكتمل', done: true },
+  { n: '02', title: 'إدارة المشروعات', desc: 'إنشاء المشروعات وتعديلها وحذفها وحفظ بياناتها في Firestore.', state: 'مكتمل', done: true },
+  { n: '03', title: 'معرض الوسائط والملفات', desc: 'رفع الصور والفيديوهات ومعاينتها وتصنيفها والبحث والتنزيل.', state: 'جاري التنفيذ', active: true },
+  { n: '04', title: 'معمل التصميم', desc: 'لوحات الإلهام والألوان والخامات وأدوات التحرير.', state: 'مخطط' },
+  { n: '05', title: 'مساعد الذكاء الاصطناعي', desc: 'توليد الأفكار والتصميمات وتحليلها عبر مزود قابل للتبديل.', state: 'مخطط' },
+  { n: '06', title: 'أدوات المجالات الفنية', desc: 'أدوات متخصصة للملابس والتربية الفنية والتصميم الرقمي والزخرفة.', state: 'مخطط' },
+  { n: '07', title: 'التجربة الافتراضية', desc: 'دمج تجربة الملابس وتوثيق نتائجها داخل المشروع.', state: 'مخطط' },
+  { n: '08', title: 'التقييم والتحليلات', desc: 'التقييم الفني والاختبارات ومؤشرات الانخراط والتقارير.', state: 'مخطط' },
+  { n: '09', title: 'الإدارة والإطلاق', desc: 'الصلاحيات والأمان والاختبارات وتحسين الأداء والنشر.', state: 'مخطط' },
 ]
 
 function App() {
@@ -170,7 +173,7 @@ function App() {
 
           <ProjectsSection onNotice={setNotice} />
 
-          <section className="section-block roadmap-section" id="roadmap"><div className="section-heading"><div><div className="section-kicker">FROM IDEA TO REALITY</div><h2>رحلة بناء المختبر</h2><p>خطة واضحة للمراحل والوظائف التي سننفذها بالترتيب.</p></div><span className="roadmap-count">06 مراحل رئيسية</span></div><div className="roadmap-list">{roadmap.map((step, i) => <div className={`roadmap-item ${step.active ? 'current' : ''}`} key={step.n}><div className="roadmap-marker">{step.active ? <Check size={16} /> : step.n}</div><div className="roadmap-copy"><h3>{step.title}</h3><p>{step.desc}</p></div><span className="roadmap-state">{step.state}</span>{i !== roadmap.length - 1 && <div className="roadmap-connector" />}</div>)}</div></section>
+          <section className="section-block roadmap-section" id="roadmap"><div className="section-heading"><div><div className="section-kicker">FROM IDEA TO REALITY</div><h2>رحلة بناء المختبر</h2><p>خطة واضحة للمراحل والوظائف التي سننفذها بالترتيب.</p></div><span className="roadmap-count">09 مراحل رئيسية</span></div><div className="roadmap-list">{roadmap.map((step, i) => <div className={`roadmap-item ${step.active ? 'current' : ''} ${step.done ? 'completed' : ''}`} key={step.n}><div className="roadmap-marker">{step.active || step.done ? <Check size={16} /> : step.n}</div><div className="roadmap-copy"><h3>{step.title}</h3><p>{step.desc}</p></div><span className="roadmap-state">{step.state}</span>{i !== roadmap.length - 1 && <div className="roadmap-connector" />}</div>)}</div></section>
 
           <footer className="footer"><div className="footer-brand"><span>VESTRA</span> ART LAB</div><p>مساحة جامعية للإبداع والتجريب والتعلم الذكي.</p><span>BUILT FOR CREATIVITY <b>✳</b> 2026</span></footer>
         </div>
