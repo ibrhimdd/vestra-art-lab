@@ -1,0 +1,126 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
+import { db } from '../lib/firebase'
+import { Download, Save, Shirt, Scissors, Layers3, Undo2, Redo2, Trash2, Copy, Sparkles, Move, PenTool, ImagePlus, Plus, Eye, EyeOff } from 'lucide-react'
+
+const CATALOG = {
+ bodies:[
+  {id:'tee',name:'تيشيرت كلاسيك',path:'M190 120 L220 96 Q250 112 280 96 L310 120 L370 175 L335 218 L308 194 L320 440 Q250 460 180 440 L192 194 L165 218 L130 175 Z'},
+  {id:'shirt',name:'قميص',path:'M190 120 L220 96 L250 112 L280 96 L310 120 L370 175 L335 218 L308 194 L320 440 L180 440 L192 194 L165 218 L130 175 Z'},
+  {id:'jacket',name:'جاكيت',path:'M190 120 L220 96 L250 112 L280 96 L310 120 L370 175 L335 218 L308 194 L320 440 L180 440 L192 194 L165 218 L130 175 Z'},
+  {id:'dress',name:'فستان',path:'M190 120 L220 96 L280 96 L310 120 L355 175 L320 220 L305 205 L345 490 Q250 525 155 490 L195 205 L180 220 L145 175 Z'},
+  {id:'hoodie',name:'هودي',path:'M190 120 Q195 78 250 78 Q305 78 310 120 L370 175 L335 218 L308 194 L320 440 L180 440 L192 194 L165 218 L130 175 Z'},
+  {id:'trousers',name:'بنطلون',path:'M175 105 L325 105 L315 265 L300 500 L250 500 L245 285 L235 285 L200 500 L150 500 L185 265 Z'},
+  {id:'skirt',name:'تنورة',path:'M195 110 L305 110 L345 485 Q250 515 155 485 Z'},
+  {id:'coat',name:'معطف طويل',path:'M190 120 L220 96 L280 96 L310 120 L370 175 L335 218 L308 194 L325 535 L175 535 L192 194 L165 218 L130 175 Z'}
+ ],
+ sleeves:[
+  {id:'sleeve-short',name:'كم قصير',path:'M190 120 L165 218 L125 205 L145 145 Z M310 120 L355 145 L375 205 L335 218 Z'},
+  {id:'sleeve-long',name:'كم طويل',path:'M190 120 L165 218 L115 365 L145 382 L215 205 Z M310 120 L355 145 L385 365 L355 382 L285 205 Z'},
+  {id:'sleeve-puff',name:'كم منفوش',path:'M190 120 Q140 125 125 195 Q125 235 170 232 L215 180 Z M310 120 Q360 125 375 195 Q375 235 330 232 L285 180 Z'},
+  {id:'sleeve-bell',name:'كم جرس',path:'M190 120 L165 218 L105 390 L160 405 L215 205 Z M310 120 L355 145 L395 390 L340 405 L285 205 Z'},
+  {id:'sleeve-kimono',name:'كم كيمونو',path:'M190 120 L115 155 L80 260 L125 280 L215 205 Z M310 120 L385 155 L420 260 L375 280 L285 205 Z'}
+ ],
+ collars:[
+  {id:'collar-round',name:'ياقة دائرية',path:'M213 105 Q250 155 287 105 Q250 132 213 105 Z'},
+  {id:'collar-v',name:'ياقة V',path:'M215 105 L250 165 L285 105 L270 102 L250 133 L230 102 Z'},
+  {id:'collar-shirt',name:'ياقة قميص',path:'M210 105 L250 145 L235 170 L200 118 Z M290 105 L250 145 L265 170 L300 118 Z'},
+  {id:'collar-high',name:'ياقة عالية',path:'M215 95 L285 95 L280 145 Q250 160 220 145 Z'},
+  {id:'collar-square',name:'ياقة مربعة',path:'M215 105 L215 150 L285 150 L285 105 L270 105 L270 135 L230 135 L230 105 Z'},
+  {id:'collar-bow',name:'ياقة فيونكة',path:'M250 135 L205 115 L220 155 L250 145 L280 155 L295 115 Z'}
+ ],
+ hems:[
+  {id:'hem-straight',name:'حافة مستقيمة',path:'M180 425 Q250 440 320 425 L320 450 Q250 465 180 450 Z'},
+  {id:'hem-rib',name:'حافة مضلعة',path:'M180 420 L320 420 L320 450 L180 450 Z'},
+  {id:'hem-scallop',name:'حافة متموجة',path:'M180 430 Q195 450 210 430 Q225 450 240 430 Q255 450 270 430 Q285 450 300 430 Q310 445 320 430 L320 455 L180 455 Z'},
+  {id:'hem-asym',name:'حافة غير متماثلة',path:'M180 420 L320 420 L320 450 L250 470 L180 445 Z'}
+ ],
+ pockets:[
+  {id:'pocket-square',name:'جيب مربع',path:'M205 245 L245 245 L245 300 Q225 315 205 300 Z'},
+  {id:'pocket-flap',name:'جيب بغطاء',path:'M205 245 L250 245 L250 292 L205 292 Z M200 238 L255 238 L250 258 L205 258 Z'},
+  {id:'pocket-round',name:'جيب دائري',path:'M205 245 Q225 230 245 245 L245 295 Q225 310 205 295 Z'},
+  {id:'pocket-large',name:'جيب كبير',path:'M190 255 L250 255 L250 335 Q220 350 190 335 Z'}
+ ],
+ details:[
+  {id:'zipper',name:'سوستة',path:'M250 145 L250 420 M244 155 L256 155 M244 175 L256 175 M244 195 L256 195 M244 215 L256 215 M244 235 L256 235 M244 255 L256 255 M244 275 L256 275 M244 295 L256 295 M244 315 L256 315 M244 335 L256 335 M244 355 L256 355 M244 375 L256 375 M244 395 L256 395',stroke:true},
+  {id:'buttons',name:'أزرار',path:'M250 165 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M250 205 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M250 245 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M250 285 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M250 325 m-5 0 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0',stroke:true},
+  {id:'belt',name:'حزام',path:'M175 285 Q250 300 325 285 L325 310 Q250 325 175 310 Z'},
+  {id:'cuffs',name:'أساور',path:'M115 355 L150 365 L142 390 L105 380 Z M350 365 L385 355 L395 380 L358 390 Z'},
+  {id:'seam',name:'خطوط خياطة',path:'M195 175 L190 420 M305 175 L310 420',stroke:true},
+  {id:'bow',name:'فيونكة',path:'M250 205 L215 185 L220 220 L250 210 L280 220 L285 185 Z'}
+ ],
+ graphics:[
+  {id:'star',name:'نجمة',path:'M250 220 L260 245 L287 246 L266 264 L273 290 L250 276 L227 290 L234 264 L213 246 L240 245 Z'},
+  {id:'flower',name:'زهرة',path:'M250 230 C220 195 205 235 240 250 C205 265 225 300 250 270 C275 300 295 265 260 250 C295 235 280 195 250 230 Z'},
+  {id:'diamond',name:'شكل هندسي',path:'M250 210 L290 255 L250 300 L210 255 Z'},
+  {id:'heart',name:'قلب',path:'M250 285 C190 245 215 195 250 230 C285 195 310 245 250 285 Z'}
+ ]
+}
+const categories=[{id:'bodies',label:'الأجسام',icon:Shirt},{id:'sleeves',label:'الأكمام',icon:Scissors},{id:'collars',label:'الياقات',icon:Layers3},{id:'hems',label:'الحواف',icon:Layers3},{id:'pockets',label:'الجيوب',icon:Plus},{id:'details',label:'التفاصيل',icon:Sparkles},{id:'graphics',label:'الزخارف',icon:PenTool}]
+const uid=()=> 'layer-'+Date.now()+'-'+Math.random().toString(36).slice(2,7)
+const firstLayer=()=>({id:uid(),catalogId:'tee',category:'bodies',name:'تيشيرت كلاسيك',path:CATALOG.bodies[0].path,color:'#d6f36a',x:0,y:0,scale:1,rotation:0,visible:true,stroke:false})
+
+export default function FashionDesignStudioSection({user,onNotice,onTryOn}){
+ const [layers,setLayers]=useState(()=>[firstLayer()])
+ const [selected,setSelected]=useState('')
+ useEffect(()=>{if(!selected&&layers[0])setSelected(layers[0].id)},[selected,layers])
+ const [category,setCategory]=useState('bodies')
+ const [tool,setTool]=useState('select')
+ const [color,setColor]=useState('#d6f36a')
+ const [pattern,setPattern]=useState('plain')
+ const [name,setName]=useState('تصميم VESTRA جديد')
+ const [saved,setSaved]=useState([])
+ const [loading,setLoading]=useState(true)
+ const [saving,setSaving]=useState(false)
+ const [history,setHistory]=useState([])
+ const [future,setFuture]=useState([])
+ const [drawing,setDrawing]=useState(false)
+ const [draft,setDraft]=useState('')
+ const [showLayers,setShowLayers]=useState(true)
+ const svgRef=useRef(null)
+ const selectedLayer=layers.find(layer=>layer.id===selected)||null
+
+ useEffect(()=>{let alive=true;if(!user?.uid||!db){setLoading(false);return}
+  getDoc(doc(db,'users',user.uid)).then(snap=>{if(alive)setSaved(snap.exists()?(snap.data().fashionDesigns||[]):[])}).catch(error=>{console.error(error);onNotice?.('تعذر تحميل تصميماتك المحفوظة.')}).finally(()=>alive&&setLoading(false))
+  return()=>{alive=false}
+ },[user?.uid])
+
+ const commit=next=>{setHistory(current=>[...current,layers].slice(-40));setFuture([]);setLayers(next)}
+ const updateSelected=patch=>commit(layers.map(layer=>layer.id===selected?{...layer,...patch}:layer))
+ const addPart=item=>{
+  const layer={id:uid(),catalogId:item.id,category,name:item.name,path:item.path,color,stroke:!!item.stroke,x:0,y:0,scale:1,rotation:0,visible:true}
+  const next=category==='bodies'?[layer]:[...layers,layer]
+  commit(next);setSelected(layer.id);setTool('select')
+ }
+ const undo=()=>{if(!history.length)return;setFuture(current=>[layers,...current].slice(0,40));setLayers(history[history.length-1]);setHistory(current=>current.slice(0,-1))}
+ const redo=()=>{if(!future.length)return;setHistory(current=>[...current,layers].slice(-40));setLayers(future[0]);setFuture(current=>current.slice(1))}
+ const removeSelected=()=>{if(!selectedLayer)return;const next=layers.filter(layer=>layer.id!==selected);commit(next);setSelected(next[next.length-1]?.id||'')}
+ const duplicateSelected=()=>{if(!selectedLayer)return;const copy={...selectedLayer,id:uid(),name:selectedLayer.name+' — نسخة',x:selectedLayer.x+18,y:selectedLayer.y+18};commit([...layers,copy]);setSelected(copy.id)}
+ const pointFromEvent=event=>{const rect=svgRef.current.getBoundingClientRect();return{x:(event.clientX-rect.left)*500/rect.width,y:(event.clientY-rect.top)*620/rect.height}}
+ const onDrawStart=event=>{if(tool!=='draw')return;event.preventDefault();svgRef.current.setPointerCapture(event.pointerId);const p=pointFromEvent(event);setDraft('M '+p.x+' '+p.y);setDrawing(true)}
+ const onDrawMove=event=>{if(!drawing)return;const p=pointFromEvent(event);setDraft(current=>current+' L '+p.x+' '+p.y)}
+ const onDrawEnd=()=>{if(!drawing)return;const layer={id:uid(),category:'free',name:'رسم حر',path:draft,color,stroke:true,x:0,y:0,scale:1,rotation:0,visible:true};commit([...layers,layer]);setSelected(layer.id);setDrawing(false);setDraft('');setTool('select')}
+
+ const applyPreset=(bodyId,partIds)=>{const body=CATALOG.bodies.find(item=>item.id===bodyId);const parts=partIds.map(id=>Object.values(CATALOG).flat().find(item=>item.id===id)).filter(Boolean);const next=[body,...parts].filter(Boolean).map((item,index)=>({id:uid(),catalogId:item.id,category:index===0?'bodies':Object.keys(CATALOG).find(key=>CATALOG[key].some(entry=>entry.id===item.id)),name:item.name,path:item.path,color:index===0?'#d6f36a':'#e7dfcf',stroke:!!item.stroke,x:0,y:0,scale:1,rotation:0,visible:true}));commit(next);setSelected(next[0]?.id||'');setPattern('plain');onNotice?.('تم تحميل قالب البداية. يمكنك تغيير أي جزء أو حذفه.')}\n const svgMarkup=useMemo(()=>{
+  const defs=pattern==='stripes'?'<pattern id="fabric" width="18" height="18" patternUnits="userSpaceOnUse"><rect width="18" height="18" fill="#e8e2d5"/><path d="M0 0V18" stroke="#7e9272" stroke-width="6"/></pattern>':pattern==='dots'?'<pattern id="fabric" width="22" height="22" patternUnits="userSpaceOnUse"><rect width="22" height="22" fill="#e8e2d5"/><circle cx="11" cy="11" r="4" fill="#7e9272"/></pattern>':''
+  const content=layers.filter(layer=>layer.visible).map(layer=>'<g transform="translate('+layer.x+' '+layer.y+') translate(250 310) rotate('+layer.rotation+') scale('+layer.scale+') translate(-250 -310)"><path d="'+layer.path+'" fill="'+(layer.stroke?'none':(layer.category==='bodies'&&pattern!=='plain'?'url(#fabric)':layer.color))+'" stroke="'+(layer.stroke?layer.color:'#263329')+'" stroke-width="'+(layer.stroke?5:2.5)+'" stroke-linejoin="round" stroke-linecap="round"/></g>').join('')
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 620"><defs>'+defs+'</defs><rect width="500" height="620" fill="#f5f1e7"/>'+content+'</svg>'
+ },[layers,pattern])
+ const exportSvg=()=>{const url=URL.createObjectURL(new Blob([svgMarkup],{type:'image/svg+xml'}));const a=document.createElement('a');a.href=url;a.download=(name||'vestra-design')+'.svg';a.click();URL.revokeObjectURL(url)}
+ const exportPng=()=>{const url=URL.createObjectURL(new Blob([svgMarkup],{type:'image/svg+xml'}));const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');canvas.width=1000;canvas.height=1240;canvas.getContext('2d').drawImage(img,0,0,1000,1240);canvas.toBlob(file=>{if(file){const png=URL.createObjectURL(file);const a=document.createElement('a');a.href=png;a.download=(name||'vestra-design')+'.png';a.click();URL.revokeObjectURL(png)}URL.revokeObjectURL(url)},'image/png')};img.src=url}
+ const saveDesign=async()=>{if(!user?.uid||!db){onNotice?.('سجّل الدخول لحفظ التصميم.');return}setSaving(true);try{const item={id:'fashion-'+Date.now(),name,title:name,components:layers,pattern,previewSvg:svgMarkup,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};const next=[item,...saved].slice(0,30);await setDoc(doc(db,'users',user.uid),{uid:user.uid,fashionDesigns:next,updatedAt:serverTimestamp()},{merge:true});setSaved(next);onNotice?.('تم حفظ التصميم في مجموعتك.')}catch(error){console.error(error);onNotice?.('تعذر حفظ التصميم.')}finally{setSaving(false)}}
+ const continueTryOn=()=>onTryOn?.({id:'design-'+Date.now(),title:name,previewSvg:svgMarkup,components:layers})
+ const restore=item=>{if(item.components?.length){commit(item.components);setPattern(item.pattern||'plain');setName(item.name||item.title||'تصميم محفوظ');setSelected(item.components[item.components.length-1].id);onNotice?.('تم فتح التصميم المحفوظ.')}else onNotice?.('هذا تصميم قديم؛ افتح نسخة جديدة أو صدّره من سجل تصميماتك.')}
+
+ return <section className="section-block fashion-studio fashion-modular">
+  <div className="section-heading fashion-studio-heading"><div><div className="section-kicker">VESTRA · MODULAR FASHION CANVAS</div><h2>استوديو تصميم الأزياء الحر</h2><p>ركّب القطعة من مكونات مستقلة، غيّر كل تفصيلة، أو ارسم فكرتك من الصفر.</p></div><button className="fashion-saved-toggle" onClick={()=>setShowLayers(v=>!v)}>{showLayers?<Eye size={15}/>:<EyeOff size={15}/>} الطبقات</button></div>
+  <div className="fashion-modular-toolbar"><div className="fashion-tool-group"><button onClick={undo} disabled={!history.length}><Undo2 size={16}/> تراجع</button><button onClick={redo} disabled={!future.length}><Redo2 size={16}/> إعادة</button><button className={tool==='select'?'active':''} onClick={()=>setTool('select')}><Move size={15}/> تحديد</button><button className={tool==='draw'?'active':''} onClick={()=>setTool('draw')}><PenTool size={15}/> رسم حر</button></div><div className="fashion-tool-group"><label>لون الرسم <input type="color" value={color} onChange={e=>setColor(e.target.value)}/></label><label>نقشة <select value={pattern} onChange={e=>setPattern(e.target.value)}><option value="plain">لون موحد</option><option value="stripes">خطوط</option><option value="dots">نقاط</option></select></label></div></div>
+  <div className="fashion-presets"><strong>بدايات جاهزة (اختيارية)</strong><button onClick={()=>applyPreset('tee',['sleeve-short','collar-round','pocket-square'])}>تيشيرت يومي</button><button onClick={()=>applyPreset('jacket',['sleeve-long','collar-shirt','zipper','pocket-flap'])}>جاكيت عملي</button><button onClick={()=>applyPreset('dress',['sleeve-puff','collar-v','belt','hem-scallop'])}>فستان إبداعي</button><button onClick={()=>applyPreset('hoodie',['sleeve-long','collar-high','pocket-large'])}>هودي واسع</button></div>\n  <div className={'fashion-modular-layout '+(showLayers?'':'hide-layers')}>
+   <aside className="fashion-library-panel"><div className="fashion-library-heading"><span>COMPONENT LIBRARY</span><strong>مكتبة المكونات</strong><small>اختر أي جزء لإضافته إلى مساحة العمل</small></div><div className="fashion-category-tabs">{categories.map(item=><button key={item.id} className={category===item.id?'active':''} onClick={()=>setCategory(item.id)}><item.icon size={14}/>{item.label}</button>)}</div><div className="fashion-component-grid">{(CATALOG[category]||[]).map(item=><button key={item.id} onClick={()=>addPart(item)}><span className="fashion-component-thumb"><svg viewBox="100 70 300 430"><path d={item.path} fill={item.stroke?'none':color} stroke="#dbe4d2" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/></svg></span><strong>{item.name}</strong><small>إضافة للمساحة <Plus size={11}/></small></button>)}</div><div className="fashion-library-tip"><Sparkles size={15}/> يمكنك إضافة أكثر من كم أو جيب، وتغيير كل واحد بشكل مستقل.</div></aside>
+   <div className="fashion-canvas-panel"><div className="fashion-canvas-head"><div><span>DESIGN CANVAS / 01</span><strong>مساحة التصميم</strong></div><span>{layers.length} مكوّن</span></div><div className={'fashion-canvas '+(tool==='draw'?'drawing':'')}><svg ref={svgRef} viewBox="0 0 500 620" onPointerDown={onDrawStart} onPointerMove={onDrawMove} onPointerUp={onDrawEnd} onPointerCancel={onDrawEnd}>{layers.filter(layer=>layer.visible).map(layer=><g key={layer.id} transform={'translate('+layer.x+' '+layer.y+') translate(250 310) rotate('+layer.rotation+') scale('+layer.scale+') translate(-250 -310)'} onClick={e=>{e.stopPropagation();if(tool==='select')setSelected(layer.id)}} style={{cursor:tool==='select'?'pointer':'crosshair'}}><path d={layer.path} fill={layer.stroke?'none':(layer.category==='bodies'&&pattern!=='plain'?'url(#canvas-pattern)':layer.color)} stroke={layer.stroke?layer.color:'#263329'} strokeWidth={layer.stroke?5:2.5} strokeLinejoin="round" strokeLinecap="round"/>{selected===layer.id&&tool==='select'&&<path d={layer.path} fill="none" stroke="#6b8d48" strokeWidth="1.5" strokeDasharray="5 5" pointerEvents="none"/>}</g>)}<defs>{pattern==='stripes'&&<pattern id="canvas-pattern" width="18" height="18" patternUnits="userSpaceOnUse"><rect width="18" height="18" fill="#e8e2d5"/><path d="M0 0V18" stroke="#7e9272" strokeWidth="6"/></pattern>}{pattern==='dots'&&<pattern id="canvas-pattern" width="22" height="22" patternUnits="userSpaceOnUse"><rect width="22" height="22" fill="#e8e2d5"/><circle cx="11" cy="11" r="4" fill="#7e9272"/></pattern>}</defs>{drawing&&<path d={draft} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>}</svg></div><div className="fashion-canvas-footer"><span>SVG VECTOR · {tool==='draw'?'ارسم بالسحب داخل المساحة':'اختر طبقة لتعديلها'}</span><div><button onClick={exportSvg}><Download size={14}/> SVG</button><button onClick={exportPng}><ImagePlus size={14}/> PNG</button></div></div></div>
+   {showLayers&&<aside className="fashion-inspector"><div className="fashion-inspector-heading"><span>LAYERS & PROPERTIES</span><strong>الطبقات والخصائص</strong></div><div className="fashion-layer-list">{[...layers].reverse().map(layer=><button key={layer.id} className={selected===layer.id?'active':''} onClick={()=>setSelected(layer.id)}><span className="fashion-layer-color" style={{background:layer.color}}/><span>{layer.name}</span><small>{layer.category==='bodies'?'جسم':layer.category==='free'?'رسم حر':'مكوّن'}</small></button>)}</div>{selectedLayer?<div className="fashion-properties"><div className="fashion-property-title"><strong>{selectedLayer.name}</strong><button onClick={removeSelected} title="حذف"><Trash2 size={15}/></button><button onClick={duplicateSelected} title="نسخ"><Copy size={15}/></button></div><label>لون الجزء <input type="color" value={selectedLayer.color} onChange={e=>updateSelected({color:e.target.value})}/></label><label>الحجم <input type="range" min=".35" max="2" step=".05" value={selectedLayer.scale} onChange={e=>updateSelected({scale:Number(e.target.value)})}/><small>{Math.round(selectedLayer.scale*100)}%</small></label><label>الموضع الأفقي <input type="range" min="-150" max="150" value={selectedLayer.x} onChange={e=>updateSelected({x:Number(e.target.value)})}/></label><label>الموضع الرأسي <input type="range" min="-150" max="150" value={selectedLayer.y} onChange={e=>updateSelected({y:Number(e.target.value)})}/></label><label>التدوير <input type="range" min="-180" max="180" value={selectedLayer.rotation} onChange={e=>updateSelected({rotation:Number(e.target.value)})}/><small>{selectedLayer.rotation}°</small></label><button className="fashion-layer-visibility" onClick={()=>updateSelected({visible:!selectedLayer.visible})}>{selectedLayer.visible?<Eye size={14}/>:<EyeOff size={14}/>} {selectedLayer.visible?'إخفاء الطبقة':'إظهار الطبقة'}</button></div>:<p className="fashion-empty-inspector">اختر مكوّناً من الطبقات أو مساحة التصميم لتعديل خصائصه.</p>}</aside>}
+  </div>
+  <div className="fashion-bottom-actions"><label>اسم التصميم <input value={name} onChange={e=>setName(e.target.value)} placeholder="اسم التصميم"/></label><div><button className="fashion-secondary-btn" onClick={saveDesign} disabled={saving}>{saving?'جارٍ الحفظ...':<><Save size={15}/> حفظ التصميم</>}</button><button className="fashion-tryon-btn" onClick={continueTryOn}><Sparkles size={15}/> جرّب التصميم على الكاميرا</button></div></div>
+  <div className="fashion-saved-section"><div className="fashion-subheading"><strong>تصميماتك المحفوظة</strong><span>{loading?'جارٍ التحميل':saved.length+' تصميم'}</span></div>{saved.length?<div className="fashion-saved-grid">{saved.slice(0,9).map(item=><button key={item.id} onClick={()=>restore(item)}><span>{item.name||item.title||'تصميم محفوظ'}</span><small>{item.components?.length||1} مكوّن · فتح التصميم</small></button>)}</div>:<p>ابدأ أول تصميم واحفظه هنا لتعود إليه في أي وقت.</p>}</div>
+ </section>
+}
