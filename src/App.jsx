@@ -148,7 +148,7 @@ function App() {
         <header className="topbar">
           <div className="topbar-right">
             <button className="icon-btn mobile-menu" onClick={() => setMenuOpen(true)} aria-label="فتح القائمة"><Menu size={20} /></button>
-            <div className="breadcrumb">المختبر <ChevronLeft size={14} /> <span>نظرة عامة</span></div>
+            <div className="breadcrumb">المختبر <ChevronLeft size={14} /> <span>{currentPageTitle}</span></div>
           </div>
           <div className="topbar-left">
             <div className="search-box"><Search size={16} /><input placeholder="ابحث في المختبر..." aria-label="ابحث في المختبر" /><kbd>⌘ K</kbd></div>
@@ -158,7 +158,7 @@ function App() {
         </header>
 
         <div className="page-content">
-          <section className="welcome-row" id="overview">
+          {active === 'overview' && <><section className="welcome-row" id="overview">
             <div><div className="eyebrow"><span className="live-dot" /> مساحة الإبداع الرقمي <span className="eyebrow-en">CREATIVE LAB / 001</span></div><h1>أهلاً بك في عالم <em>الإبداع.</em></h1><p>مساحتك لاكتشاف الأفكار، وتجربة التصميم، وتحويل الخيال إلى أعمال فنية.</p></div>
             <button className="primary-btn" onClick={() => setShowProject(true)}><Plus size={17} /> ابدأ مشروعاً جديداً</button>
           </section>
@@ -176,27 +176,27 @@ function App() {
             <div className="stat-card progress-stat"><div className="stat-icon blue"><Activity size={19} /></div><div><strong>04 <small>/ 09</small></strong><span>معمل التصميم</span></div><small className="progress-line"><i /></small></div>
           </section>
 
-          <section className="section-block" id="disciplines">
+          </>}{active === 'disciplines' && <><section className="section-block" id="disciplines">
             <div className="section-heading"><div><div className="section-kicker">EXPLORE YOUR FIELD</div><h2>اختر مجال إبداعك</h2><p>كل مجال يفتح لك مجموعة مختلفة من الأدوات والتجارب.</p></div><button className="text-link" onClick={() => setNotice('سيتم تفعيل صفحات المجالات بالتدريج.')}>كل المجالات <ArrowLeft size={15} /></button></div>
-            <div className="discipline-grid">{disciplines.map((d, i) => { const Icon = d.icon; return <button key={d.id} className={`discipline-card ${d.tone} ${selectedDiscipline === d.id ? 'chosen' : ''}`} onClick={() => { setSelectedDiscipline(d.id); setNotice(`اخترت مجال ${d.title}. سيتم فتح أدواته عند تنفيذ المرحلة الخاصة به.`) }}><div className="discipline-top"><div className="discipline-icon"><Icon size={22} /></div><span className="discipline-number">0{i + 1}</span></div><div className="discipline-en">{d.en}</div><h3>{d.title}</h3><p>{d.desc}</p><div className="discipline-foot"><span>{d.count}</span><span className="round-arrow"><ArrowUpLeft size={16} /></span></div></button> })}</div>
+            <div className="discipline-grid">{disciplines.map((d, i) => { const Icon = d.icon; return <button key={d.id} className={`discipline-card ${d.tone} ${selectedDiscipline === d.id ? 'chosen' : ''}`} onClick={() => goTo('discipline-' + d.id)}><div className="discipline-top"><div className="discipline-icon"><Icon size={22} /></div><span className="discipline-number">0{i + 1}</span></div><div className="discipline-en">{d.en}</div><h3>{d.title}</h3><p>{d.desc}</p><div className="discipline-foot"><span>{d.count}</span><span className="round-arrow"><ArrowUpLeft size={16} /></span></div></button> })}</div>
           </section>
 
-          <section className="section-block tools-section" id="tools">
+          </>}{active === 'tools' && <><section className="section-block tools-section" id="tools">
             <div className="section-heading"><div><div className="section-kicker">YOUR CREATIVE TOOLKIT</div><h2>أدوات المختبر</h2><p>مجموعة أدوات هتساعدك في كل خطوة من الفكرة إلى التنفيذ.</p></div><span className="planned-label"><span /> أدوات ضمن خطة التطوير</span></div>
             <div className="tools-grid">{tools.map((tool, i) => { const Icon = tool.icon; const available = ['لوحة الإلهام', 'استوديو الألوان'].includes(tool.title); return <article className={`tool-card ${available ? 'tool-card-available' : ''}`} key={tool.title}><div className="tool-icon"><Icon size={20} /></div><div className="tool-tag">{tool.tag}</div><h3>{tool.title}</h3><p>{tool.desc}</p><div className="tool-bottom"><span className={available ? 'tool-status tool-status-live' : 'tool-status'}>{tool.status}</span>{available ? <button className="tool-launch" onClick={() => goTo(tool.title === 'لوحة الإلهام' ? 'moodboard' : 'color-studio')}>فتح الأداة <ArrowUpLeft size={13} /></button> : <span className="tool-number">0{i + 1}</span>}</div></article> })}</div>
           </section>
 
-          <MoodboardSection user={user} onNotice={setNotice} />
+          </>}{active === 'moodboard' && <MoodboardSection user={user} onNotice={setNotice} />}
 
-          <ColorStudioSection user={user} onNotice={setNotice} />
+          {active === 'color-studio' && <ColorStudioSection user={user} onNotice={setNotice} />}
 
-          <ProfileSection onNotice={setNotice} />
+          {active === 'profile' && <ProfileSection onNotice={setNotice} />}
 
-          <ProjectsSection onNotice={setNotice} />
+          {active === 'projects' && <ProjectsSection onNotice={setNotice} />}
 
-          <section className="section-block roadmap-section" id="roadmap"><div className="section-heading"><div><div className="section-kicker">FROM IDEA TO REALITY</div><h2>رحلة بناء المختبر</h2><p>خطة واضحة للمراحل والوظائف التي سننفذها بالترتيب.</p></div><span className="roadmap-count">09 مراحل رئيسية</span></div><div className="roadmap-list">{roadmap.map((step, i) => <div className={`roadmap-item ${step.active ? 'current' : ''} ${step.done ? 'completed' : ''}`} key={step.n}><div className="roadmap-marker">{step.active || step.done ? <Check size={16} /> : step.n}</div><div className="roadmap-copy"><h3>{step.title}</h3><p>{step.desc}</p></div><span className="roadmap-state">{step.state}</span>{i !== roadmap.length - 1 && <div className="roadmap-connector" />}</div>)}</div></section>
+          {active === 'roadmap' && <><section className="section-block roadmap-section" id="roadmap"><div className="section-heading"><div><div className="section-kicker">FROM IDEA TO REALITY</div><h2>رحلة بناء المختبر</h2><p>خطة واضحة للمراحل والوظائف التي سننفذها بالترتيب.</p></div><span className="roadmap-count">09 مراحل رئيسية</span></div><div className="roadmap-list">{roadmap.map((step, i) => <div className={`roadmap-item ${step.active ? 'current' : ''} ${step.done ? 'completed' : ''}`} key={step.n}><div className="roadmap-marker">{step.active || step.done ? <Check size={16} /> : step.n}</div><div className="roadmap-copy"><h3>{step.title}</h3><p>{step.desc}</p></div><span className="roadmap-state">{step.state}</span>{i !== roadmap.length - 1 && <div className="roadmap-connector" />}</div>)}</div></section>
 
-          <footer className="footer"><div className="footer-brand"><span>VESTRA</span> ART LAB</div><p>مساحة جامعية للإبداع والتجريب والتعلم الذكي.</p><span>BUILT FOR CREATIVITY <b>✳</b> 2026</span></footer>
+          </>}<footer className="footer"><div className="footer-brand"><span>VESTRA</span> ART LAB</div><p>مساحة جامعية للإبداع والتجريب والتعلم الذكي.</p><span>BUILT FOR CREATIVITY <b>✳</b> 2026</span></footer>
         </div>
       </main>
 
