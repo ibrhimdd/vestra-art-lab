@@ -21,6 +21,7 @@ export default function MaterialsLibrarySection({ user, onNotice }) {
   const [editingId, setEditingId] = useState('')
   const [preview, setPreview] = useState(null)
   const [imageFile, setImageFile] = useState(null)
+  const [removeExistingImage, setRemoveExistingImage] = useState(false)
   const fileRef = useRef(null)
   useEffect(() => () => { if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview) }, [preview])
 
@@ -47,7 +48,7 @@ export default function MaterialsLibrarySection({ user, onNotice }) {
 
   const resetForm = () => {
     setForm({ name: '', category: 'أقمشة', description: '', color: '#9FB89A', use: USES[0], tags: '' })
-    setImageFile(null); setEditingId(''); setPreview(null)
+    setImageFile(null); setEditingId(''); setPreview(null); setRemoveExistingImage(false)
     if (fileRef.current) fileRef.current.value = ''
   }
 
@@ -87,7 +88,7 @@ export default function MaterialsLibrarySection({ user, onNotice }) {
         name: form.name.trim(), category: form.category, description: form.description.trim(),
         color: form.color.toUpperCase(), use: form.use,
         tags: form.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-        ...(uploaded || (old?.imageUrl ? { imageUrl: old.imageUrl, publicId: old.publicId, format: old.format, bytes: old.bytes } : {})),
+        ...(uploaded || (!removeExistingImage && old?.imageUrl ? { imageUrl: old.imageUrl, publicId: old.publicId, format: old.format, bytes: old.bytes } : {})),
         createdAt: old?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
@@ -104,7 +105,7 @@ export default function MaterialsLibrarySection({ user, onNotice }) {
   const edit = item => {
     setEditingId(item.id)
     setForm({ name: item.name || '', category: item.category || 'أخرى', description: item.description || '', color: item.color || '#9FB89A', use: item.use || USES[0], tags: (item.tags || []).join(', ') })
-    setPreview(item.imageUrl || null); setImageFile(null)
+    setPreview(item.imageUrl || null); setImageFile(null); setRemoveExistingImage(false)
     document.getElementById('materials-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
@@ -125,7 +126,7 @@ export default function MaterialsLibrarySection({ user, onNotice }) {
         <div className="materials-fields"><label>اللون المرجعي<div className="materials-color"><input type="color" value={form.color} onChange={e => setForm({ ...form, color: e.target.value })}/><code>{form.color.toUpperCase()}</code></div></label><label>كلمات مفتاحية<input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="ناعم، صيفي، مطفي"/></label></div>
         <input ref={fileRef} type="file" accept="image/*" className="visually-hidden" onChange={chooseImage}/>
         <button type="button" className="materials-upload" onClick={() => fileRef.current?.click()}><ImagePlus size={17}/><span>{imageFile ? imageFile.name : 'إضافة صورة للخامة'}</span><UploadCloud size={16}/></button>
-        {preview && <div className="materials-preview"><img src={preview} alt="معاينة الخامة"/><button type="button" onClick={() => { setPreview(null); setImageFile(null) }} aria-label="إزالة الصورة"><X size={15}/></button></div>}
+        {preview && <div className="materials-preview"><img src={preview} alt="معاينة الخامة"/><button type="button" onClick={() => { setPreview(null); setImageFile(null); setRemoveExistingImage(Boolean(editingId)) }} aria-label="إزالة الصورة"><X size={15}/></button></div>}{removeExistingImage && <p className="materials-image-removed">سيتم حذف رابط الصورة من بيانات الخامة عند الحفظ. الملف الأصلي على Cloudinary لن يُحذف تلقائياً.</p>}
         {error && <p className="materials-error" role="alert">{error}</p>}
         <div className="materials-form-actions"><button type="submit" disabled={saving || !form.name.trim()}>{saving ? <LoaderCircle size={16} className="spin"/> : <Save size={16}/>} {uploading ? 'جارٍ رفع الصورة...' : saving ? 'جارٍ الحفظ...' : editingId ? 'حفظ التعديلات' : 'حفظ الخامة'}</button>{editingId && <button type="button" className="materials-cancel" onClick={resetForm}>إلغاء</button>}</div>
       </form>
