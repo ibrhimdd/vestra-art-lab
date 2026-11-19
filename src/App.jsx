@@ -7,6 +7,9 @@ import ProjectsSection from './components/ProjectsSection'
 import MoodboardSection from './components/MoodboardSection'
 import ColorStudioSection from './components/ColorStudioSection'
 import MaterialsLibrarySection from './components/MaterialsLibrarySection'
+import IdeaGeneratorSection from './components/IdeaGeneratorSection'
+import DesignAnalyzerSection from './components/DesignAnalyzerSection'
+import VirtualTryOnSection from './components/VirtualTryOnSection'
 import ProfileSection from './components/ProfileSection'
 import {
   Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
@@ -131,7 +134,7 @@ function App() {
         <nav className="side-nav">
           {nav.map(item => {
             const Icon = item.icon
-            return <button key={item.id} className={(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) ? 'nav-item active' : 'nav-item'} onClick={() => goTo(item.id)}><Icon size={18} /><span>{item.label}</span>{(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) && <i />}</button>
+            return <button key={item.id} className={(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio', 'materials-library', 'idea-generator', 'design-analyzer', 'virtual-try-on'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) ? 'nav-item active' : 'nav-item'} onClick={() => goTo(item.id)}><Icon size={18} /><span>{item.label}</span>{(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) && <i />}</button>
           })}
         </nav>
         <div className="side-divider" />
@@ -193,6 +196,9 @@ function App() {
           {active === 'color-studio' && <ColorStudioSection user={user} onNotice={setNotice} />}
 
           {active === 'materials-library' && <MaterialsLibrarySection user={user} onNotice={setNotice} />}
+          {active === 'idea-generator' && <IdeaGeneratorSection onNotice={setNotice} />}
+          {active === 'design-analyzer' && <DesignAnalyzerSection onNotice={setNotice} />}
+          {active === 'virtual-try-on' && <VirtualTryOnSection user={user} onNotice={setNotice} />}
 
           {active === 'profile' && <ProfileSection onNotice={setNotice} />}
 
