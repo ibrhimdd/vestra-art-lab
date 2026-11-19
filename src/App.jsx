@@ -196,7 +196,7 @@ function App() {
           {active === 'color-studio' && <ColorStudioSection user={user} onNotice={setNotice} />}
 
           {active === 'materials-library' && <MaterialsLibrarySection user={user} onNotice={setNotice} />}
-          {active === 'idea-generator' && <IdeaGeneratorSection onNotice={setNotice} />}
+          {active === 'idea-generator' && <IdeaGeneratorSection user={user} onNotice={setNotice} />}
           {active === 'design-analyzer' && <DesignAnalyzerSection onNotice={setNotice} />}
           {active === 'virtual-try-on' && <VirtualTryOnSection user={user} onNotice={setNotice} />}
 
