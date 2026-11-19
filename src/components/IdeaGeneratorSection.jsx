@@ -68,18 +68,30 @@ export default function IdeaGeneratorSection({ user, onNotice }) {
     setResult(false)
     try {
       const token = await user.getIdToken()
-      const response = await fetch('/api/creative-assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ mode: 'idea', field, style, topic }),
-      })
-      const data = await response.json()
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 45000)
+      let response
+      let data
+      try {
+        response = await fetch('/api/creative-assistant', {
+          method: 'POST',
+          signal: controller.signal,
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ mode: 'idea', field, style, topic }),
+        }),
+        })
+        const raw = await response.text()
+        try { data = raw ? JSON.parse(raw) : {} } catch { data = { error: raw || 'استجابة غير مفهومة من الخادم.' } }
+      } finally {
+        clearTimeout(timeoutId)
+      }
+      if (!response.ok) throw new Error(data.error || 'تعذر الحصول على رد من المساعد الذكي.')
       if (!response.ok) throw new Error(data.error || 'تعذر توليد الفكرة.')
       setAiText(data.text)
       setResult(true)
       onNotice?.('تم إعداد مقترح إبداعي بالذكاء الاصطناعي.')
     } catch (error) {
-      setAiError(error.message || 'تعذر الاتصال بالمساعد الذكي.')
+      setAiError(error.name === 'AbortError' ? 'استغرق الرد وقتاً أطول من المتوقع. حاول مرة أخرى.' : (error.message || 'تعذر الاتصال بالمساعد الذكي.'))
     } finally { setAiLoading(false) }
   }
 
