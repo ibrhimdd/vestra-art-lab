@@ -14,6 +14,7 @@ async function verifyFirebaseToken(req) {
     `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(firebaseApiKey)}`,
     {
       method: 'POST',
+      signal: AbortSignal.timeout(8000),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ idToken }),
     },
@@ -129,62 +130,56 @@ export default async function handler(req, res) {
     let lastError = 'Unknown provider error'
     let lastModel = model
 
-    for (const selectedModel of modelsToTry) {
-      lastModel = selectedModel;
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        let response
-        try {
-          response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: selectedModel,
-              messages,
-              max_tokens: 1200,
-            }),
-          })
-        } catch (error) {
-          lastStatus = 502
-          lastError = error?.message || 'Network request failed'
-          if (attempt === 0) {
-            await new Promise(resolve => setTimeout(resolve, 700))
-            continue
-          }
-          break
-        }
-
-        const raw = await response.text()
-        let result = {}
+    // Bound every upstream call so a stalled provider cannot keep the Vercel
+    // function alive until its platform timeout.
+    for (const selectedModel of modelsToTry.slice(0, 3)) {
+      lastModel = selectedModel
+      let response
+      let raw = ''
+      let result = {}
+      try {
+        response = await fetch(endpoint, {
+          method: 'POST',
+          signal: AbortSignal.timeout(10000),
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: selectedModel,
+            messages,
+            max_tokens: 1200,
+          }),
+        })
+        raw = await response.text()
         try { result = raw ? JSON.parse(raw) : {} } catch { result = {} }
-
-        if (response.ok) {
-          const answer = result.choices?.[0]?.message?.content
-          if (typeof answer === 'string' && answer.trim()) {
-            return res.status(200).json({ text: answer.trim(), model: selectedModel })
-          }
-          lastStatus = 502
-          lastError = 'Provider returned an empty response'
-          break
-        }
-
-        lastStatus = response.status
-        lastError = result?.error?.message
-          || result?.message
-          || (raw ? raw.slice(0, 500) : 'Unknown provider error')
-
-        if ([429, 500, 502, 503, 504].includes(response.status) && attempt === 0) {
-          const retryAfter = Number(response.headers.get('retry-after'))
-          const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
-            ? Math.min(retryAfter * 1000, 2500)
-            : 700
-          await new Promise(resolve => setTimeout(resolve, waitMs))
-          continue
-        }
-        break
+      } catch (error) {
+        lastStatus = error?.name === 'TimeoutError' || error?.name === 'AbortError' ? 504 : 502
+        lastError = error?.message || 'Network request failed'
+        console.warn('AI provider attempt failed:', {
+          model: selectedModel,
+          status: lastStatus,
+          error: String(lastError).slice(0, 250),
+        })
+        continue
       }
+
+      if (response.ok) {
+        const answer = result.choices?.[0]?.message?.content
+        if (typeof answer === 'string' && answer.trim()) {
+          return res.status(200).json({ text: answer.trim(), model: selectedModel })
+        }
+        lastStatus = 502
+        lastError = 'Provider returned an empty response'
+        continue
+      }
+
+      lastStatus = response.status
+      lastError = result?.error?.message
+        || result?.message
+        || (raw ? raw.slice(0, 500) : 'Unknown provider error')
+
+      if (![429, 500, 502, 503, 504].includes(response.status)) break
     }
 
     console.error('AI provider request failed after model fallback chain:', { model: lastModel, status: lastStatus, error: String(lastError).slice(0, 500) })
