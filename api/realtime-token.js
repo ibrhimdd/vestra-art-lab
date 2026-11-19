@@ -32,7 +32,6 @@ export default async function handler(req, res) {
     const decart = createDecartClient({ apiKey: decartApiKey })
     const token = await decart.tokens.create({
       expiresIn: 300,
-      metadata: { service_tier: 0 },
     })
     return res.status(200).json({ apiKey: token.apiKey, expiresAt: token.expiresAt })
   } catch (error) {
