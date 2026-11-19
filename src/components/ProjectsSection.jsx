@@ -7,7 +7,8 @@ import { db } from '../lib/firebase'
 import { useAuth } from '../lib/AuthContext'
 import {
   CloudUpload, FileImage, Film, FolderOpen, LoaderCircle, Trash2,
-  Pencil, X, Check, ChevronDown, CalendarDays, Clock3, ExternalLink
+  Pencil, X, Check, ChevronDown, CalendarDays, Clock3, ExternalLink,
+  Download, Search, Image as ImageIcon, PlayCircle
 } from 'lucide-react'
 
 const CLOUD_NAME = 'fww3cli3'
@@ -38,6 +39,9 @@ export default function ProjectsSection({ onNotice }) {
   const [editName, setEditName] = useState('')
   const [editDiscipline, setEditDiscipline] = useState('general')
   const [expandedId, setExpandedId] = useState('')
+  const [assetFilters, setAssetFilters] = useState({})
+  const [assetSearch, setAssetSearch] = useState({})
+  const [previewAsset, setPreviewAsset] = useState(null)
   const fileInputs = useRef({})
 
   const loadProjects = async () => {
@@ -183,6 +187,15 @@ export default function ProjectsSection({ onNotice }) {
           const assets = project.assets || []
           const isEditing = editingId === project.id
           const isExpanded = expandedId === project.id
+          const filter = assetFilters[project.id] || 'all'
+          const searchTerm = (assetSearch[project.id] || '').trim().toLocaleLowerCase('ar')
+          const visibleAssets = assets.filter(asset => {
+            const matchesType = filter === 'all' || (filter === 'images' ? asset.resourceType === 'image' : asset.resourceType === 'video')
+            const matchesName = !searchTerm || (asset.originalName || '').toLocaleLowerCase('ar').includes(searchTerm)
+            return matchesType && matchesName
+          })
+          const imageCount = assets.filter(asset => asset.resourceType === 'image').length
+          const videoCount = assets.filter(asset => asset.resourceType === 'video').length
           return <article className="project-card" key={project.id}>
             {isEditing ? (
               <form className="project-edit-form" onSubmit={saveProject}>
@@ -214,19 +227,49 @@ export default function ProjectsSection({ onNotice }) {
                   <div><Clock3 size={14} /><span>آخر تحديث</span><strong>{formatDate(project.updatedAt)}</strong></div>
                   <div><FileImage size={14} /><span>عدد الملفات</span><strong>{assets.length} ملف</strong></div>
                 </div>}
-                {assets.length > 0 && <div className="project-assets">{assets.map(asset => <div className="project-asset" key={asset.assetId}>
-                  <a href={asset.url} target="_blank" rel="noreferrer" className="project-asset-preview" aria-label={`فتح ${asset.originalName}`}>
-                    {asset.resourceType === 'video' ? <><Film size={23} /><small>فيديو</small></> : <img src={asset.url} alt={asset.originalName} loading="lazy" />}
-                  </a>
-                  <div className="project-asset-info"><span>{asset.originalName}</span><small>{asset.format?.toUpperCase()} • {Math.max(1, Math.round((asset.bytes || 0) / 1024))} KB</small></div>
-                  <a className="project-asset-open" href={asset.url} target="_blank" rel="noreferrer" title="فتح الملف"><ExternalLink size={14} /></a>
-                  <button className="project-asset-remove" title="إزالة من المشروع" aria-label="إزالة الملف من المشروع" disabled={busy === project.id} onClick={() => removeAssetRecord(project, asset)}><Trash2 size={15} /></button>
-                </div>)}</div>}
+                <div className="project-gallery">
+                  <div className="project-gallery-heading">
+                    <div><strong>معرض ملفات المشروع</strong><span>{imageCount} صورة · {videoCount} فيديو</span></div>
+                    <span className="gallery-total">{assets.length} ملف</span>
+                  </div>
+                  {assets.length > 0 ? <>
+                    <div className="gallery-toolbar">
+                      <div className="gallery-filters" role="group" aria-label="تصفية الملفات">
+                        <button className={filter === 'all' ? 'selected' : ''} onClick={() => setAssetFilters(current => ({ ...current, [project.id]: 'all' }))}>الكل <small>{assets.length}</small></button>
+                        <button className={filter === 'images' ? 'selected' : ''} onClick={() => setAssetFilters(current => ({ ...current, [project.id]: 'images' }))}>الصور <small>{imageCount}</small></button>
+                        <button className={filter === 'videos' ? 'selected' : ''} onClick={() => setAssetFilters(current => ({ ...current, [project.id]: 'videos' }))}>الفيديو <small>{videoCount}</small></button>
+                      </div>
+                      <label className="gallery-search"><Search size={14} /><input value={assetSearch[project.id] || ''} onChange={event => setAssetSearch(current => ({ ...current, [project.id]: event.target.value }))} placeholder="ابحث باسم الملف..." /></label>
+                    </div>
+                    {visibleAssets.length > 0 ? <div className="project-gallery-grid">{visibleAssets.map(asset => <article className="gallery-asset-card" key={asset.assetId}>
+                      <button className="gallery-preview" onClick={() => setPreviewAsset({ ...asset, projectName: project.name || 'مشروع بدون اسم' })} aria-label="معاينة الملف">
+                        {asset.resourceType === 'video' ? <><div className="gallery-video-placeholder"><PlayCircle size={36} /><span>معاينة فيديو</span></div></> : <img src={asset.url} alt={asset.originalName || 'صورة المشروع'} loading="lazy" />}
+                        <span className="gallery-type">{asset.resourceType === 'video' ? <Film size={12} /> : <ImageIcon size={12} />}{asset.resourceType === 'video' ? 'فيديو' : 'صورة'}</span>
+                      </button>
+                      <div className="gallery-asset-details">
+                        <strong title={asset.originalName}>{asset.originalName || 'ملف بدون اسم'}</strong>
+                        <small>{(asset.format || 'FILE').toUpperCase()} · {Math.max(1, Math.round((asset.bytes || 0) / 1024))} KB</small>
+                        <div className="gallery-asset-actions">
+                          <button onClick={() => setPreviewAsset({ ...asset, projectName: project.name || 'مشروع بدون اسم' })}><ExternalLink size={13} /> معاينة</button>
+                          <a href={asset.url} download={asset.originalName || 'vestra-file'} target="_blank" rel="noreferrer" title="تنزيل أو فتح الملف"><Download size={13} /> تنزيل</a>
+                          <button className="gallery-delete" disabled={busy === project.id} onClick={() => removeAssetRecord(project, asset)} title="إزالة الملف من المشروع"><Trash2 size={13} /></button>
+                        </div>
+                      </div>
+                    </article>)}</div> : <div className="gallery-no-results">لا توجد ملفات تطابق البحث أو التصفية.</div>}
+                  </> : <div className="gallery-empty"><FolderOpen size={22} /><strong>المعرض جاهز لاستقبال إبداعاتك</strong><span>ارفع صوراً أو فيديوهات لتظهر هنا في شكل معرض مرئي.</span></div>}
+                </div>
               </>
             )}
           </article>
         })}</div>}
-      <p className="projects-note"><FileImage size={14} /> الملفات محفوظة على Cloudinary، وبياناتها وروابطها محفوظة في Firestore. حذف المشروع لا يحذف الملفات الأصلية.</p>
+      <p className="projects-note"><FileImage size={14} /> الملفات محفوظة على Cloudinary، وبياناتها وروابطها محفوظة في Firestore. حذف مرجع الملف من المشروع لا يحذف الأصل من Cloudinary.</p>
+      {previewAsset && <div className="asset-lightbox" role="dialog" aria-modal="true" aria-label="معاينة ملف المشروع" onClick={() => setPreviewAsset(null)}>
+        <div className="asset-lightbox-panel" onClick={event => event.stopPropagation()}>
+          <div className="asset-lightbox-header"><div><strong>{previewAsset.originalName || 'ملف المشروع'}</strong><span>{previewAsset.projectName}</span></div><button className="project-icon-action" onClick={() => setPreviewAsset(null)} aria-label="إغلاق المعاينة"><X size={18} /></button></div>
+          <div className="asset-lightbox-stage">{previewAsset.resourceType === 'video' ? <video src={previewAsset.url} controls autoPlay playsInline /> : <img src={previewAsset.url} alt={previewAsset.originalName || 'معاينة الصورة'} />}</div>
+          <div className="asset-lightbox-footer"><span>{(previewAsset.format || 'FILE').toUpperCase()} · {Math.max(1, Math.round((previewAsset.bytes || 0) / 1024))} KB</span><a href={previewAsset.url} download={previewAsset.originalName || 'vestra-file'} target="_blank" rel="noreferrer"><Download size={15} /> تنزيل أو فتح الملف</a></div>
+        </div>
+      </div>}
     </section>
   )
 }
