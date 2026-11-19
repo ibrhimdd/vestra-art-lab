@@ -204,7 +204,7 @@ function App() {
 
           {active === 'materials-library' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مكتبة الخامات...</div>}><MaterialsLibrarySection user={user} onNotice={setNotice} /></Suspense>}
           {active === 'idea-generator' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مولّد الأفكار...</div>}><IdeaGeneratorSection user={user} onNotice={setNotice} /></Suspense>}
-          {active === 'design-analyzer' && <Suspense fallback={<div className="route-loading">جارٍ تحميل محلل التصميم...</div>}><DesignAnalyzerSection onNotice={setNotice} /></Suspense>}
+          {active === 'design-analyzer' && <Suspense fallback={<div className="route-loading">جارٍ تحميل محلل التصميم...</div>}><DesignAnalyzerSection user={user} onNotice={setNotice} /></Suspense>}
           {active === 'fashion-studio' && <Suspense fallback={<div className="route-loading">جارٍ تحميل استوديو تصميم الأزياء...</div>}><FashionDesignStudioSection user={user} onNotice={setNotice} onTryOn={design => { setTryOnDesign(design); goTo('virtual-try-on') }} /></Suspense>}
           {active === 'virtual-try-on' && <Suspense fallback={<div className="route-loading">جارٍ تحميل التجربة الافتراضية...</div>}><VirtualTryOnSection user={user} onNotice={setNotice} initialDesign={tryOnDesign} /></Suspense>}
           {active === 'pattern-explorer' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مستكشف النقوش...</div>}><PatternExplorerSection user={user} onNotice={setNotice} /></Suspense>}
