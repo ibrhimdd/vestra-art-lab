@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from './lib/firebase'
 import { useAuth } from './lib/AuthContext'
@@ -23,12 +23,12 @@ const disciplines = [
 ]
 
 const tools = [
-  { title: 'مولّد الأفكار', desc: 'حوّل وصفك إلى اتجاهات إبداعية أولية.', icon: WandSparkles, tag: 'ذكاء اصطناعي', status: 'قريباً' },
-  { title: 'محلل التصميم', desc: 'احصل على ملاحظات حول التكوين والألوان.', icon: Activity, tag: 'تحليل ذكي', status: 'قريباً' },
-  { title: 'لوحة الإلهام', desc: 'اجمع المراجع والألوان والصور في مساحة واحدة.', icon: Grid2X2, tag: 'تنظيم بصري', status: 'متاح الآن' },
-  { title: 'مكتبة الخامات', desc: 'استكشف الخامات والأنسجة والنقوش.', icon: SwatchBook, tag: 'مكتبة فنية', status: 'قيد التخطيط' },
-  { title: 'استوديو الألوان', desc: 'استخرج الألوان من الصور وكون لوحاتك واحفظها.', icon: Palette, tag: 'تصميم', status: 'متاح الآن' },
-  { title: 'التجربة الافتراضية', desc: 'جرّب تنسيقات الملابس على صورتك أو بالكاميرا.', icon: Sparkles, tag: 'تجربة تفاعلية', status: 'ضمن الخطة' },
+  { id: 'idea-generator', title: 'مولّد الأفكار', desc: 'حوّل وصفك إلى اتجاهات إبداعية أولية.', icon: WandSparkles, tag: 'ذكاء اصطناعي', status: 'قريباً' },
+  { id: 'design-analyzer', title: 'محلل التصميم', desc: 'احصل على ملاحظات حول التكوين والألوان.', icon: Activity, tag: 'تحليل ذكي', status: 'قريباً' },
+  { id: 'moodboard', title: 'لوحة الإلهام', desc: 'اجمع المراجع والألوان والصور في مساحة واحدة.', icon: Grid2X2, tag: 'تنظيم بصري', status: 'متاح الآن' },
+  { id: 'materials-library', title: 'مكتبة الخامات', desc: 'استكشف الخامات والأنسجة والنقوش.', icon: SwatchBook, tag: 'مكتبة فنية', status: 'قيد التخطيط' },
+  { id: 'color-studio', title: 'استوديو الألوان', desc: 'استخرج الألوان من الصور وكون لوحاتك واحفظها.', icon: Palette, tag: 'تصميم', status: 'متاح الآن' },
+  { id: 'virtual-try-on', title: 'التجربة الافتراضية', desc: 'جرّب تنسيقات الملابس على صورتك أو بالكاميرا.', icon: Sparkles, tag: 'تجربة تفاعلية', status: 'ضمن الخطة' },
 ]
 
 const roadmap = [
@@ -43,14 +43,28 @@ const roadmap = [
   { n: '09', title: 'الإدارة والإطلاق', desc: 'الصلاحيات والأمان والاختبارات وتحسين الأداء والنشر.', state: 'مخطط' },
 ]
 
+const routePaths = { overview: '/', disciplines: '/disciplines', tools: '/tools',
+'idea-generator': '/tools/idea-generator', 'design-analyzer': '/tools/design-analyzer',
+moodboard: '/tools/moodboard', 'materials-library': '/tools/materials-library',
+'color-studio': '/tools/color-studio', 'virtual-try-on': '/tools/virtual-try-on',
+projects: '/projects', roadmap: '/roadmap', profile: '/profile',
+'discipline-fashion': '/disciplines/fashion', 'discipline-art': '/disciplines/art',
+'discipline-digital': '/disciplines/digital', 'discipline-decor': '/disciplines/decor' };
+const routeTitles = { overview: 'نظرة عامة', disciplines: 'المجالات الفنية', tools: 'أدوات المختبر',
+'idea-generator': 'مولّد الأفكار', 'design-analyzer': 'محلل التصميم', moodboard: 'لوحة الإلهام',
+'materials-library': 'مكتبة الخامات', 'color-studio': 'استوديو الألوان', 'virtual-try-on': 'التجربة الافتراضية',
+projects: 'مشروعاتي وملفاتي', roadmap: 'خطة التطوير', profile: 'ملفي الشخصي',
+'discipline-fashion': 'الملابس والنسيج', 'discipline-art': 'التربية الفنية', 'discipline-digital': 'التصميم الرقمي', 'discipline-decor': 'الفنون الزخرفية' };
+function getRouteFromPath(path) { const normalized = path.length > 1 ? path.replace(/\\/$/, '') : path; return Object.keys(routePaths).find(key => routePaths[key] === normalized) || 'overview'; }
 function App() {
-  const [active, setActive] = useState('overview')
+  const [active, setActive] = useState(() => getRouteFromPath(window.location.pathname))
   const [menuOpen, setMenuOpen] = useState(false)
-  const [selectedDiscipline, setSelectedDiscipline] = useState('')
   const [projectName, setProjectName] = useState('')
   const [showProject, setShowProject] = useState(false)
   const [notice, setNotice] = useState('')
   const { user, loading, logout } = useAuth()
+
+  useEffect(() => { const sync = () => setActive(getRouteFromPath(window.location.pathname)); window.addEventListener('popstate', sync); return () => window.removeEventListener('popstate', sync) }, [])
 
   if (loading) return <div className="auth-loading">جارٍ تحميل مساحة VESTRA...</div>
   if (!user) return <AuthScreen />
@@ -61,15 +75,14 @@ function App() {
     { id: 'tools', label: 'أدوات المختبر', icon: WandSparkles },
     { id: 'moodboard', label: 'لوحة الإلهام', icon: Grid2X2 },
     { id: 'color-studio', label: 'استوديو الألوان', icon: Palette },
-    { id: 'projects', label: 'مشروعاتي', icon: FolderKanban },
+    { id: 'projects', label: 'مشروعاتي وملفاتي', icon: FolderKanban },
     { id: 'roadmap', label: 'خطة التطوير', icon: BookOpen },
   ]
 
-  const goTo = (id) => {
-    setActive(id)
-    setMenuOpen(false)
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
+  const goTo = (id) => { const path = routePaths[id] || '/'; if (window.location.pathname !== path) window.history.pushState({}, '', path); setActive(id); setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+  const activeTool = tools.find(tool => tool.id === active)
+  const activeDiscipline = disciplines.find(item => ('discipline-' + item.id) === active)
+  const currentPageTitle = routeTitles[active] || activeTool?.title || activeDiscipline?.title || 'نظرة عامة'
 
   const createProject = async (event) => {
     event.preventDefault()
