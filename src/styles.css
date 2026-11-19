@@ -223,3 +223,56 @@
 @keyframes moodboard-spin{to{transform:rotate(360deg)}}
 @media(max-width:900px){.moodboard-workspace{grid-template-columns:1fr}.moodboard-tools{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.moodboard-tools-title,.moodboard-private-note{grid-column:1/-1}.moodboard-items{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:560px){.moodboard-tools{grid-template-columns:1fr}.moodboard-items{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.moodboard-canvas{padding:10px}.moodboard-image{height:125px}.moodboard-section .section-heading{align-items:flex-start}.moodboard-save{padding:9px 10px;font-size:9px}}
+
+
+/* Color Studio */
+.color-studio-section{scroll-margin-top:95px}
+.color-save-button{display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 14px;border:1px solid #71864e;border-radius:7px;background:#c8df9d;color:#1c2718;font-size:10px;font-weight:800;white-space:nowrap}
+.color-save-button:disabled{opacity:.65;cursor:default}
+.color-studio-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);gap:13px;align-items:stretch}
+.color-studio-editor,.color-studio-preview{min-width:0;border:1px solid var(--line);border-radius:11px;background:#171d19;padding:15px}
+.color-studio-editor-head,.color-studio-editor-head>div{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.color-studio-editor-head>div{justify-content:flex-start;color:var(--lime)}
+.color-studio-editor-head strong{font-size:11px;color:#e9efe5}
+.color-studio-editor-head>span{font:9px 'DM Mono';color:#879486}
+.color-upload-button{width:100%;display:flex;align-items:center;gap:10px;text-align:right;padding:12px;margin:14px 0;border:1px dashed #58664b;border-radius:8px;background:#20291f;color:var(--lime)}
+.color-upload-button>span{display:grid;gap:3px;flex:1}
+.color-upload-button strong{font-size:10px;color:#e4ebdf}
+.color-upload-button small{font-size:8px;color:#8e9a8b}
+.color-upload-button:disabled{opacity:.65}
+.color-source-preview{display:block;width:100%;max-height:150px;object-fit:cover;border-radius:7px;margin-bottom:12px}
+.color-palette-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.color-swatch-editor{min-width:0;display:grid;grid-template-columns:1fr auto auto;gap:5px;padding:6px;border:1px solid #354136;border-radius:7px;background:#111713}
+.color-swatch-large{grid-column:1/-1;height:48px;border-radius:4px;border:1px solid #ffffff20}
+.color-swatch-editor>input:not([type=color]){min-width:0;width:100%;border:1px solid #354136;border-radius:4px;background:#1b241d;color:#dfe9d8;padding:5px 3px;text-align:center;font:8px 'DM Mono';direction:ltr}
+.color-swatch-editor>input[type=color]{width:25px;height:25px;padding:1px;border:1px solid #465541;border-radius:4px;background:#182019}
+.color-swatch-editor>button{width:25px;height:25px;display:grid;place-items:center;border:1px solid #354136;border-radius:4px;background:#1b241d;color:#aebca7}
+.color-editor-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.color-editor-actions button{display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #45553e;border-radius:6px;background:#263123;color:#c8df9d;font-size:9px}
+.color-editor-actions button:disabled{opacity:.45;cursor:not-allowed}
+.color-studio-hint{font-size:8px;line-height:1.8;color:#788579;margin:13px 0 0}
+.color-studio-error{margin-top:10px;padding:9px;border:1px solid #754d45;border-radius:6px;background:#392622;color:#f0c1b7;font-size:9px}
+.color-studio-preview{display:flex;flex-direction:column;justify-content:space-between;background:radial-gradient(ellipse at 50% 0%,#34412b,#171d19 68%)}
+.color-preview-top{display:flex;justify-content:space-between;gap:8px;color:#a4b68a;font:8px 'DM Mono';letter-spacing:.6px}
+.color-preview-blocks{display:flex;min-height:205px;overflow:hidden;border-radius:8px;margin:18px 0;border:1px solid #ffffff1c}
+.color-preview-blocks>div{flex:1;min-width:0;display:flex;align-items:flex-end;justify-content:center;padding:7px 2px}
+.color-preview-blocks>div span{writing-mode:vertical-rl;transform:rotate(180deg);font:8px 'DM Mono';color:#111713;background:#ffffffb8;border-radius:3px;padding:5px 3px;mix-blend-mode:screen}
+.color-preview-bottom{display:grid;gap:4px}
+.color-preview-bottom strong{font-size:13px;color:#e9efe5}
+.color-preview-bottom span{font-size:9px;color:#89948b}
+.saved-palettes{margin-top:25px}
+.saved-palettes-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:13px}
+.saved-palettes-heading h3{font-size:15px;margin:4px 0 0}
+.saved-palettes-heading>span{font:9px 'DM Mono';color:#89948b}
+.color-empty{min-height:90px;display:flex;align-items:center;justify-content:center;gap:9px;padding:18px;border:1px dashed #3b493b;border-radius:9px;color:#89958a;font-size:9px;text-align:center}
+.saved-palette-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.saved-palette-card{min-width:0;border:1px solid var(--line);border-radius:9px;background:#171d19;padding:9px}
+.saved-palette-colors{display:flex;height:55px;overflow:hidden;border-radius:5px}
+.saved-palette-colors button{flex:1;min-width:0;border:0;padding:0}
+.saved-palette-meta{display:flex;align-items:center;gap:7px;margin-top:9px}
+.saved-palette-meta>div{display:grid;gap:2px;flex:1;min-width:0}
+.saved-palette-meta strong{font-size:9px;color:#e4ebdf;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.saved-palette-meta small{font-size:8px;color:#879486}
+.saved-palette-meta>button{display:grid;place-items:center;min-width:27px;height:26px;padding:0 6px;border:1px solid #43503f;border-radius:5px;background:#20291f;color:#c8df9d;font-size:8px}
+@media(max-width:900px){.color-studio-layout{grid-template-columns:1fr}.color-preview-blocks{min-height:165px}.saved-palette-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.color-studio-section .section-heading{align-items:flex-start}.color-save-button{padding:9px 10px;font-size:9px}.color-palette-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.saved-palette-grid{grid-template-columns:1fr}.color-studio-editor,.color-studio-preview{padding:11px}.color-preview-blocks{min-height:145px}}
