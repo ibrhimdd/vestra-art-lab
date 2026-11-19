@@ -60,14 +60,13 @@ VESTRA ART LAB مختبر فني رقمي متعدد التخصصات لطلاب
 - لا تدّعِ أن التسجيل أو الحفظ أو الرفع يعمل فعلياً دون اختبار.
 
 ## الخطوة التالية المتفق عليها
-1. انتظر إعداد Cloudinary من صاحب المشروع، ثم افحص ملفات Firebase الحالية وFirestore rules وpackage.json.
-2. حدّد signed uploads عبر Vercel Function أو خادم موثوق، أو unsigned preset مقيد للاختبار.
-3. لا تطلب API Secret في المحادثة أو GitHub. إذا احتاجه endpoint خادمي، يوضع في إعدادات Environment Variables السرية لدى منصة الاستضافة.
-4. نفّذ رفع صورة تجريبية واحفظ رابطها وmetadata في Firestore.
-5. أعد قراءة المستند واعرض الصورة.
-6. اختبر الفيديو ضمن حدود الخطة.
-7. اختبر الحذف والصلاحيات.
-8. شغّل npm run build والاختبارات، ثم حدّث PROJECT_STATUS.md وPROJECT_STRUCTURE.md وROADMAP.md.
+1. إنهاء واختبار معرض الصور والفيديوهات والبحث والتصفية والمعاينة والتنزيل.
+2. اختبار رفع فيديو حقيقي ضمن حدود Cloudinary.
+3. مراجعة قيود Upload Preset وأمان الرفع قبل الاستخدام الموسع.
+4. تقييم signed uploads عبر Vercel Function للإنتاج.
+5. لا تطلب API Secret في المحادثة أو GitHub؛ يوضع فقط في إعدادات بيئية سرية خادمية عند الحاجة.
+6. اختبر الحذف؛ الوظيفة الحالية تزيل مرجع الملف من Firestore ولا تحذف الأصل من Cloudinary.
+7. شغّل npm run build والاختبارات، ثم حدّث PROJECT_STATUS.md وPROJECT_STRUCTURE.md وROADMAP.md.
 
 ## معايير التسليم
 - اذكر الملفات التي تغيرت.
