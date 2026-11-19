@@ -38,6 +38,13 @@ npm install
 npm run dev
 npm run build
 
+## إعداد التجربة الافتراضية المباشرة
+- أضف `DECART_API_KEY` في Vercel Project → Settings → Environment Variables (Production وPreview).
+- المفتاح دائم وسري ويُستخدم داخل `api/realtime-token.js` فقط؛ لا تضفه إلى متغير يبدأ بـ `VITE_` ولا إلى GitHub.
+- يحتاج endpoint إلى `VITE_FIREBASE_API_KEY` الموجود أصلاً للتحقق من جلسة Firebase قبل إصدار Decart client token قصير العمر.
+- بعد إضافة المفتاح، أعد نشر المشروع. تجربة الملابس تستخدم الكاميرا وWebRTC، ويجب أن يوافق المستخدم صراحة على إرسال بث الكاميرا وصورة القطعة إلى Decart.
+- قد يستهلك تشغيل التجربة رصيد Decart بحسب مدة الفيديو؛ أوقف الجلسة عند الانتهاء.
+
 ## قواعد العمل
 - اقرأ README وdocs/AI_HANDOFF.md وdocs/PROJECT_STATUS.md قبل التعديل.
 - حدّث PROJECT_STATUS.md بعد كل مرحلة.
