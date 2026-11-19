@@ -1,3 +1,16 @@
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
+import { db } from './lib/firebase'
+import { useAuth } from './lib/AuthContext'
+import AuthScreen from './components/AuthScreen'
+import {
+  Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
+  ChevronDown, ChevronLeft, CircleHelp, CloudUpload, Compass,
+  FileImage, FolderKanban, Gem, GraduationCap, Grid2X2, Grid3X3, Layers3,
+  Lightbulb, Menu, Palette, Plus, Search, Settings2, Shapes,
+  Sparkles, SwatchBook, WandSparkles, X, LogOut
+} from 'lucide-react'
+
 const ProjectsSection = lazy(() => import('./components/ProjectsSection'))
 const MoodboardSection = lazy(() => import('./components/MoodboardSection'))
 const ColorStudioSection = lazy(() => import('./components/ColorStudioSection'))
@@ -8,27 +21,6 @@ const VirtualTryOnSection = lazy(() => import('./components/VirtualTryOnSection'
 const PatternExplorerSection = lazy(() => import('./components/PatternExplorerSection'))
 const ProfileSection = lazy(() => import('./components/ProfileSection'))
 
-import { lazy, Suspense, useEffect, useState } from 'react'
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
-import { db } from './lib/firebase'
-import { useAuth } from './lib/AuthContext'
-import AuthScreen from './components/AuthScreen'
-import ProjectsSection from './components/ProjectsSection'
-import MoodboardSection from './components/MoodboardSection'
-import ColorStudioSection from './components/ColorStudioSection'
-import MaterialsLibrarySection from './components/MaterialsLibrarySection'
-import IdeaGeneratorSection from './components/IdeaGeneratorSection'
-import DesignAnalyzerSection from './components/DesignAnalyzerSection'
-import VirtualTryOnSection from './components/VirtualTryOnSection'
-import PatternExplorerSection from './components/PatternExplorerSection'
-import ProfileSection from './components/ProfileSection'
-import {
-  Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
-  ChevronDown, ChevronLeft, CircleHelp, CloudUpload, Compass,
-  FileImage, FolderKanban, Gem, GraduationCap, Grid2X2, Grid3X3, Layers3,
-  Lightbulb, Menu, Palette, Plus, Search, Settings2, Shapes,
-  Sparkles, SwatchBook, WandSparkles, X, LogOut
-} from 'lucide-react'
 
 const disciplines = [
   { id: 'fashion', title: 'الملابس والنسيج', en: 'FASHION & TEXTILE', desc: 'ابتكر الأزياء، جرّب الألوان والنقوش، واستكشف تنسيقات جديدة.', icon: SwatchBook, tone: 'mint', count: '04 أدوات' },
