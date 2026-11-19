@@ -504,4 +504,22 @@ html{scroll-padding-top:84px}
 @media(max-width:900px){.pattern-workspace{grid-template-columns:1fr}.pattern-preview-panel{order:0}.pattern-controls{order:1}}
 @media(max-width:600px){.pattern-saved-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pattern-preview-footer{font-size:8px}.pattern-export-actions{flex-direction:column}.pattern-color-grid{gap:7px}}
 
+/* Fashion Design Studio */
+.fashion-studio-section{scroll-margin-top:95px}
+.fashion-studio-layout{display:grid;grid-template-columns:minmax(260px,.72fr) minmax(0,1.6fr);gap:14px;align-items:start}
+.fashion-studio-editor{min-width:0;display:grid;gap:12px;border:1px solid var(--line);border-radius:12px;background:#171d19;padding:15px;position:sticky;top:88px}
+.fashion-studio-editor label{display:grid;gap:6px;color:#aab5a6;font-size:10px}
+.fashion-studio-editor input[type=range]{width:100%;accent-color:var(--lime)}
+.fashion-garment-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.fashion-garment-btn{border:1px solid #39443a;border-radius:7px;background:#202821;color:#c7d3c0;padding:9px 6px;font-size:10px}
+.fashion-garment-btn.active{border-color:var(--lime);background:#283322;color:#eaf6cf}
+.fashion-sliders{display:grid;gap:10px;padding:10px;border:1px dashed #39443a;border-radius:8px;background:#1b221c}
+.fashion-export-btn{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;padding:10px;border:1px solid #39443a;border-radius:7px;background:#202821;color:#dfe8d9;font-size:10px}
+.fashion-studio-preview{min-width:0;border:1px solid var(--line);border-radius:12px;background:radial-gradient(ellipse at 50% 0%,#232c1d,#171d19 68%);padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.fashion-canvas-svg{width:100%;max-width:340px;aspect-ratio:3/4;filter:drop-shadow(0 10px 20px #00000055)}
+.fashion-canvas-hint{display:flex;align-items:center;gap:6px;margin:0;color:#8a9686;font-size:9px}
+.fashion-studio-gallery{margin-top:16px;border:1px solid var(--line);border-radius:12px;background:#171d19;padding:15px}
+@media(max-width:900px){.fashion-studio-layout{grid-template-columns:1fr}.fashion-studio-editor{position:static}}
+@media(max-width:560px){.fashion-garment-grid{grid-template-columns:1fr}}
+
 .route-loading{min-height:260px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:12px;background:#171d19;color:#b6cc94;font-size:12px}

@@ -7,7 +7,7 @@ import {
   Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
   ChevronDown, ChevronLeft, CircleHelp, CloudUpload, Compass,
   FileImage, FolderKanban, Gem, GraduationCap, Grid2X2, Grid3X3, Layers3,
-  Lightbulb, Menu, Palette, Plus, Search, Settings2, Shapes,
+  Lightbulb, Menu, Palette, Plus, Search, Settings2, Shapes, Shirt,
   Sparkles, SwatchBook, WandSparkles, X, LogOut
 } from 'lucide-react'
 
@@ -19,6 +19,7 @@ const IdeaGeneratorSection = lazy(() => import('./components/IdeaGeneratorSectio
 const DesignAnalyzerSection = lazy(() => import('./components/DesignAnalyzerSection'))
 const VirtualTryOnSection = lazy(() => import('./components/VirtualTryOnSection'))
 const PatternExplorerSection = lazy(() => import('./components/PatternExplorerSection'))
+const FashionDesignStudioSection = lazy(() => import('./components/FashionDesignStudioSection'))
 const ProfileSection = lazy(() => import('./components/ProfileSection'))
 
 
@@ -37,6 +38,7 @@ const tools = [
   { id: 'color-studio', title: 'استوديو الألوان', desc: 'استخرج الألوان من الصور وكون لوحاتك واحفظها.', icon: Palette, tag: 'تصميم', status: 'متاح الآن' },
   { id: 'pattern-explorer', title: 'مستكشف النقوش', desc: 'أنشئ وحدات زخرفية متكررة وصدّرها بصيغ SVG وPNG.', icon: Grid3X3, tag: 'زخرفة وأنماط', status: 'متاح الآن' },
   { id: 'virtual-try-on', title: 'التجربة الافتراضية', desc: 'جرّب قطعة ملابس على بث الكاميرا مباشرة باستخدام محرك Decart.', icon: Sparkles, tag: 'تجربة بالذكاء الاصطناعي', status: 'يتطلب مفتاح Decart' },
+  { id: 'fashion-studio', title: 'استوديو تصميم الأزياء', desc: 'صمّم القطعة والقماشة والألوان معاً، وصدّر النتيجة النهائية PNG أو SVG.', icon: Shirt, tag: 'تصميم الأزياء', status: 'متاح الآن' },
 ]
 
 const roadmap = [
@@ -55,12 +57,14 @@ const routePaths = { overview: '/', disciplines: '/disciplines', tools: '/tools'
 'idea-generator': '/tools/idea-generator', 'design-analyzer': '/tools/design-analyzer',
 moodboard: '/tools/moodboard', 'materials-library': '/tools/materials-library',
 'color-studio': '/tools/color-studio', 'virtual-try-on': '/tools/virtual-try-on', 'pattern-explorer': '/tools/pattern-explorer',
+'fashion-studio': '/tools/fashion-studio',
 projects: '/projects', roadmap: '/roadmap', profile: '/profile',
 'discipline-fashion': '/disciplines/fashion', 'discipline-art': '/disciplines/art',
 'discipline-digital': '/disciplines/digital', 'discipline-decor': '/disciplines/decor' };
 const routeTitles = { overview: 'نظرة عامة', disciplines: 'المجالات الفنية', tools: 'أدوات المختبر',
 'idea-generator': 'مولّد الأفكار', 'design-analyzer': 'محلل التصميم', moodboard: 'لوحة الإلهام',
 'materials-library': 'مكتبة الخامات', 'color-studio': 'استوديو الألوان', 'virtual-try-on': 'التجربة الافتراضية', 'pattern-explorer': 'مستكشف النقوش',
+'fashion-studio': 'استوديو تصميم الأزياء',
 projects: 'مشروعاتي وملفاتي', roadmap: 'خطة التطوير', profile: 'ملفي الشخصي',
 'discipline-fashion': 'الملابس والنسيج', 'discipline-art': 'التربية الفنية', 'discipline-digital': 'التصميم الرقمي', 'discipline-decor': 'الفنون الزخرفية' };
 function getRouteFromPath(path) { const normalized = path.length > 1 ? (path.endsWith('/') ? path.slice(0, -1) : path) : path; return Object.keys(routePaths).find(key => routePaths[key] === normalized) || 'overview'; }
@@ -204,6 +208,7 @@ function App() {
           {active === 'design-analyzer' && <Suspense fallback={<div className="route-loading">جارٍ تحميل محلل التصميم...</div>}><DesignAnalyzerSection onNotice={setNotice} /></Suspense>}
           {active === 'virtual-try-on' && <Suspense fallback={<div className="route-loading">جارٍ تحميل التجربة الافتراضية...</div>}><VirtualTryOnSection user={user} onNotice={setNotice} /></Suspense>}
           {active === 'pattern-explorer' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مستكشف النقوش...</div>}><PatternExplorerSection user={user} onNotice={setNotice} /></Suspense>}
+          {active === 'fashion-studio' && <Suspense fallback={<div className="route-loading">جارٍ تحميل استوديو تصميم الأزياء...</div>}><FashionDesignStudioSection user={user} onNotice={setNotice} /></Suspense>}
 
           {active === 'profile' && <Suspense fallback={<div className="route-loading">جارٍ تحميل الملف الشخصي...</div>}><ProfileSection onNotice={setNotice} /></Suspense>}
 
