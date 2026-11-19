@@ -80,8 +80,20 @@ function App() {
       setProjectName('')
       setShowProject(false)
     } catch (error) {
-      console.error('Project save failed:', error)
-      setNotice('تعذر حفظ المشروع. تحقق من قواعد Firestore واتصال الإنترنت.')
+      console.error('Project save failed:', {
+        code: error?.code || 'unknown',
+        message: error?.message || String(error),
+        name: error?.name || 'Error',
+      })
+      const errorCode = error?.code || 'unknown'
+      const errorMessages = {
+        'permission-denied': 'قواعد Firestore رفضت إنشاء المشروع (permission-denied).',
+        'unauthenticated': 'انتهت جلسة تسجيل الدخول. سجّل الدخول مرة أخرى.',
+        'unavailable': 'خدمة Firestore غير متاحة حالياً. تحقق من الإنترنت وحاول مجدداً.',
+        'failed-precondition': 'قاعدة Firestore تحتاج إلى إعداد أو تهيئة إضافية (failed-precondition).',
+        'resource-exhausted': 'تم تجاوز حد الاستخدام المتاح في Firebase (resource-exhausted).',
+      }
+      setNotice(errorMessages[errorCode] || `فشل حفظ المشروع. كود الخطأ: ${errorCode}. ${error?.message || 'راجع سجل الأخطاء.'}`)
     }
   }
 
