@@ -119,3 +119,4 @@
 - `/roadmap` — خطة التطوير.
 
 التوجيه الحالي خفيف داخل `src/App.jsx` باستخدام History API و`popstate`؛ يجب اختبار فتح الروابط المباشرة وإعادة التحميل على Vercel. الخطة المستقبلية فصل كل صفحة إلى `src/pages/` ومكونات تخطيط مستقلة عند نمو التطبيق.
+\n\n## أدوات المختبر المضافة — 2026-11-19\n- `src/components/MaterialsLibrarySection.jsx`: مكتبة خامات المستخدم ورفع صورها.\n- `src/components/IdeaGeneratorSection.jsx`: مولّد مفاهيم بقوالب محلية.\n- `src/components/DesignAnalyzerSection.jsx`: فحص بصري تقني محلي باستخدام Canvas.\n- `src/components/VirtualTryOnSection.jsx`: مساحة تجهيز جلسات تنسيق الملابس وحفظها.\n

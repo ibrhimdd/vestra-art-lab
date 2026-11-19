@@ -6,6 +6,10 @@ import AuthScreen from './components/AuthScreen'
 import ProjectsSection from './components/ProjectsSection'
 import MoodboardSection from './components/MoodboardSection'
 import ColorStudioSection from './components/ColorStudioSection'
+import MaterialsLibrarySection from './components/MaterialsLibrarySection'
+import IdeaGeneratorSection from './components/IdeaGeneratorSection'
+import DesignAnalyzerSection from './components/DesignAnalyzerSection'
+import VirtualTryOnSection from './components/VirtualTryOnSection'
 import ProfileSection from './components/ProfileSection'
 import {
   Activity, ArrowLeft, ArrowUpLeft, Bell, BookOpen, Bot, Check,
@@ -23,12 +27,12 @@ const disciplines = [
 ]
 
 const tools = [
-  { id: 'idea-generator', title: 'مولّد الأفكار', desc: 'حوّل وصفك إلى اتجاهات إبداعية أولية.', icon: WandSparkles, tag: 'ذكاء اصطناعي', status: 'قريباً' },
-  { id: 'design-analyzer', title: 'محلل التصميم', desc: 'احصل على ملاحظات حول التكوين والألوان.', icon: Activity, tag: 'تحليل ذكي', status: 'قريباً' },
+  { id: 'idea-generator', title: 'مولّد الأفكار', desc: 'حوّل وصفك إلى اتجاهات إبداعية أولية.', icon: WandSparkles, tag: 'توليد إبداعي', status: 'متاح الآن' },
+  { id: 'design-analyzer', title: 'محلل التصميم', desc: 'احصل على ملاحظات حول التكوين والألوان.', icon: Activity, tag: 'تحليل بصري', status: 'متاح الآن' },
   { id: 'moodboard', title: 'لوحة الإلهام', desc: 'اجمع المراجع والألوان والصور في مساحة واحدة.', icon: Grid2X2, tag: 'تنظيم بصري', status: 'متاح الآن' },
-  { id: 'materials-library', title: 'مكتبة الخامات', desc: 'استكشف الخامات والأنسجة والنقوش.', icon: SwatchBook, tag: 'مكتبة فنية', status: 'قيد التخطيط' },
+  { id: 'materials-library', title: 'مكتبة الخامات', desc: 'استكشف الخامات والأنسجة والنقوش.', icon: SwatchBook, tag: 'مكتبة فنية', status: 'متاح الآن' },
   { id: 'color-studio', title: 'استوديو الألوان', desc: 'استخرج الألوان من الصور وكون لوحاتك واحفظها.', icon: Palette, tag: 'تصميم', status: 'متاح الآن' },
-  { id: 'virtual-try-on', title: 'التجربة الافتراضية', desc: 'جرّب تنسيقات الملابس على صورتك أو بالكاميرا.', icon: Sparkles, tag: 'تجربة تفاعلية', status: 'ضمن الخطة' },
+  { id: 'virtual-try-on', title: 'التجربة الافتراضية', desc: 'جهّز صورة مرجعية، اختر إطلالة، واحفظ جلسة التنسيق.', icon: Sparkles, tag: 'تجربة تفاعلية', status: 'نسخة أولية' },
 ]
 
 const roadmap = [
@@ -130,7 +134,7 @@ function App() {
         <nav className="side-nav">
           {nav.map(item => {
             const Icon = item.icon
-            return <button key={item.id} className={(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) ? 'nav-item active' : 'nav-item'} onClick={() => goTo(item.id)}><Icon size={18} /><span>{item.label}</span>{(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) && <i />}</button>
+            return <button key={item.id} className={(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio', 'materials-library', 'idea-generator', 'design-analyzer', 'virtual-try-on'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) ? 'nav-item active' : 'nav-item'} onClick={() => goTo(item.id)}><Icon size={18} /><span>{item.label}</span>{(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) && <i />}</button>
           })}
         </nav>
         <div className="side-divider" />
@@ -190,6 +194,11 @@ function App() {
           </>}{active === 'moodboard' && <MoodboardSection user={user} onNotice={setNotice} />}
 
           {active === 'color-studio' && <ColorStudioSection user={user} onNotice={setNotice} />}
+
+          {active === 'materials-library' && <MaterialsLibrarySection user={user} onNotice={setNotice} />}
+          {active === 'idea-generator' && <IdeaGeneratorSection onNotice={setNotice} />}
+          {active === 'design-analyzer' && <DesignAnalyzerSection onNotice={setNotice} />}
+          {active === 'virtual-try-on' && <VirtualTryOnSection user={user} onNotice={setNotice} />}
 
           {active === 'profile' && <ProfileSection onNotice={setNotice} />}
 
