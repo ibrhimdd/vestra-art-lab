@@ -69,10 +69,16 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
     setAiBusy(true); setError(''); setAiReview('')
     try {
       const token = await user.getIdToken()
-      const response = await fetch('/api/creative-assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 45000)
+      let response
+      let data
+      try {
+        response = await fetch('/api/creative-assistant', {
+          method: 'POST',
+          signal: controller.signal,
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
           mode: 'critique', field, brief,
           metrics: {
             dimensions: `${analysis.width}×${analysis.height}`,
@@ -82,13 +88,19 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
             colors: analysis.colors,
           },
         }),
-      })
-      const data = await response.json()
+        }),
+        })
+        const raw = await response.text()
+        try { data = raw ? JSON.parse(raw) : {} } catch { data = { error: raw || 'استجابة غير مفهومة من الخادم.' } }
+      } finally {
+        clearTimeout(timeoutId)
+      }
+      if (!response.ok) throw new Error(data.error || 'تعذر الحصول على رد من المساعد الذكي.')
       if (!response.ok) throw new Error(data.error || 'تعذر إنشاء المراجعة.')
       setAiReview(data.text)
       onNotice?.('اكتملت المراجعة الإرشادية بالذكاء الاصطناعي.')
     } catch (err) {
-      setError(err.message || 'تعذر الاتصال بالمساعد الذكي.')
+      setError(err.name === 'AbortError' ? 'استغرقت المراجعة وقتاً أطول من المتوقع. حاول مرة أخرى.' : (err.message || 'تعذر الاتصال بالمساعد الذكي.'))
     } finally { setAiBusy(false) }
   }
 
