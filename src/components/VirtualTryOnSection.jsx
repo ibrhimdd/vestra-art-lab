@@ -12,7 +12,7 @@ const looks = [
 
 const MAX_GARMENT_SIZE = 10 * 1024 * 1024
 
-export default function VirtualTryOnSection({ user, onNotice }) {
+export default function VirtualTryOnSection({ user, onNotice, initialDesign }) {
   const [garment, setGarment] = useState(null)
   const [garmentPreview, setGarmentPreview] = useState('')
   const [look, setLook] = useState(looks[0])
@@ -27,6 +27,36 @@ export default function VirtualTryOnSection({ user, onNotice }) {
   const outputVideo = useRef(null)
   const streamRef = useRef(null)
   const clientRef = useRef(null)
+
+  useEffect(() => {
+    if (!initialDesign?.previewSvg) return
+    let cancelled = false
+    const svgBlob = new Blob([initialDesign.previewSvg], { type: 'image/svg+xml;charset=utf-8' })
+    const objectUrl = URL.createObjectURL(svgBlob)
+    const image = new Image()
+    image.onload = () => {
+      if (cancelled) { URL.revokeObjectURL(objectUrl); return }
+      const canvas = document.createElement('canvas')
+      canvas.width = 600
+      canvas.height = 820
+      const context = canvas.getContext('2d')
+      context.fillStyle = '#f4f2e9'
+      context.fillRect(0, 0, canvas.width, canvas.height)
+      context.drawImage(image, 155, 20, 290, 780)
+      canvas.toBlob(blob => {
+        if (!blob || cancelled) return
+        const file = new File([blob], `${initialDesign.title || 'vestra-design'}.png`, { type: 'image/png' })
+        setGarment(file)
+        setGarmentPreview(URL.createObjectURL(file))
+        setError('')
+        onNotice?.('تم نقل معاينة التصميم إلى التجربة الافتراضية. راجع الصورة قبل تشغيل الكاميرا.')
+      }, 'image/png')
+      URL.revokeObjectURL(objectUrl)
+    }
+    image.onerror = () => { URL.revokeObjectURL(objectUrl); if (!cancelled) setError('تعذر تجهيز صورة التصميم. يمكنك رفع صورة القطعة يدوياً.') }
+    image.src = objectUrl
+    return () => { cancelled = true; URL.revokeObjectURL(objectUrl) }
+  }, [initialDesign?.id, initialDesign?.previewSvg])
 
   useEffect(() => {
     let alive = true
