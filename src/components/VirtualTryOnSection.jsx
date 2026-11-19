@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
-import { createDecartClient, models } from '@decartai/sdk'
 import { db } from '../lib/firebase'
-import { Camera, Check, ImagePlus, LoaderCircle, Play, Save, Shirt, Sparkles, Square, UploadCloud, Video } from 'lucide-react'
+import { Camera, Check, ImagePlus, LoaderCircle, Play, Save, Shirt, Sparkles, Square } from 'lucide-react'
 
 const looks = [
   { id: 'linen', name: 'إطلالة الكتان', type: 'طبيعي · صيفي', color: '#c6b89b', accent: '#65765b', prompt: 'Substitute the current outfit with a relaxed natural linen summer outfit in warm beige tones.' },
@@ -80,6 +79,7 @@ export default function VirtualTryOnSection({ user, onNotice }) {
     setError('')
     setStatus('camera')
     try {
+      const { createDecartClient, models } = await import('@decartai/sdk')
       const model = models.realtime('lucy-vton-latest')
       const cameraStream = await navigator.mediaDevices.getUserMedia({
         audio: false,
