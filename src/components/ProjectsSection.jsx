@@ -1,12 +1,32 @@
 import { useEffect, useRef, useState } from 'react'
-import { collection, getDocs, query, where, updateDoc, doc, arrayUnion, serverTimestamp } from 'firebase/firestore'
+import {
+  collection, getDocs, query, where, updateDoc, deleteDoc, doc,
+  arrayUnion, serverTimestamp
+} from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { useAuth } from '../lib/AuthContext'
-import { CloudUpload, FileImage, Film, FolderOpen, LoaderCircle, Trash2 } from 'lucide-react'
+import {
+  CloudUpload, FileImage, Film, FolderOpen, LoaderCircle, Trash2,
+  Pencil, X, Check, ChevronDown, CalendarDays, Clock3, ExternalLink
+} from 'lucide-react'
 
 const CLOUD_NAME = 'fww3cli3'
 const UPLOAD_PRESET = 'vestra_student_uploads'
 const MAX_FILE_SIZE = 50 * 1024 * 1024
+
+const disciplines = [
+  { value: 'fashion', label: 'الملابس والنسيج' },
+  { value: 'art', label: 'التربية الفنية' },
+  { value: 'digital', label: 'التصميم الرقمي' },
+  { value: 'decor', label: 'الفنون الزخرفية' },
+  { value: 'general', label: 'مشروع عام' },
+]
+const disciplineName = value => disciplines.find(item => item.value === value)?.label || value || 'مشروع عام'
+const formatDate = value => {
+  if (!value) return 'غير متاح'
+  const date = typeof value?.toDate === 'function' ? value.toDate() : new Date(value)
+  return Number.isNaN(date.getTime()) ? 'غير متاح' : new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
 
 export default function ProjectsSection({ onNotice }) {
   const { user } = useAuth()
@@ -14,10 +34,18 @@ export default function ProjectsSection({ onNotice }) {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
+  const [editingId, setEditingId] = useState('')
+  const [editName, setEditName] = useState('')
+  const [editDiscipline, setEditDiscipline] = useState('general')
+  const [expandedId, setExpandedId] = useState('')
   const fileInputs = useRef({})
 
   const loadProjects = async () => {
-    if (!user || !db) return
+    if (!user || !db) {
+      setProjects([])
+      setLoading(false)
+      return
+    }
     setLoading(true)
     try {
       const snapshot = await getDocs(query(collection(db, 'projects'), where('ownerId', '==', user.uid)))
@@ -33,9 +61,57 @@ export default function ProjectsSection({ onNotice }) {
 
   useEffect(() => { loadProjects() }, [user?.uid])
 
+  const beginEdit = project => {
+    setEditingId(project.id)
+    setEditName(project.name || '')
+    setEditDiscipline(project.discipline || 'general')
+  }
+
+  const saveProject = async event => {
+    event.preventDefault()
+    const project = projects.find(item => item.id === editingId)
+    if (!project || project.ownerId !== user?.uid || !editName.trim()) return
+    setBusy(project.id)
+    try {
+      await updateDoc(doc(db, 'projects', project.id), {
+        name: editName.trim(),
+        discipline: editDiscipline,
+        updatedAt: serverTimestamp(),
+      })
+      setEditingId('')
+      await loadProjects()
+      onNotice?.('تم تحديث بيانات المشروع بنجاح.')
+    } catch (err) {
+      console.error('Project update failed:', err)
+      setError('تعذر حفظ التعديلات. تحقق من صلاحيات Firestore.')
+    } finally {
+      setBusy('')
+    }
+  }
+
+  const removeProject = async project => {
+    if (project.ownerId !== user?.uid) return
+    const confirmed = window.confirm(`هل تريد حذف مشروع «${project.name}»؟ سيتم حذف سجل المشروع وروابط ملفاته فقط، ولن تُحذف الملفات الأصلية من Cloudinary.`)
+    if (!confirmed) return
+    setBusy(project.id)
+    try {
+      await deleteDoc(doc(db, 'projects', project.id))
+      setProjects(current => current.filter(item => item.id !== project.id))
+      if (expandedId === project.id) setExpandedId('')
+      if (editingId === project.id) setEditingId('')
+      onNotice?.('تم حذف المشروع من مساحة العمل.')
+    } catch (err) {
+      console.error('Project delete failed:', err)
+      setError('تعذر حذف المشروع. تحقق من صلاحيات Firestore.')
+    } finally {
+      setBusy('')
+    }
+  }
+
   const uploadFiles = async (project, files) => {
     const selected = Array.from(files || [])
     if (!selected.length) return
+    if (project.ownerId !== user?.uid) return
     setBusy(project.id)
     setError('')
     try {
@@ -79,7 +155,9 @@ export default function ProjectsSection({ onNotice }) {
   }
 
   const removeAssetRecord = async (project, asset) => {
+    if (project.ownerId !== user?.uid) return
     if (!window.confirm('هل تريد إزالة الملف من قائمة المشروع؟ لن يُحذف الملف الأصلي من Cloudinary.')) return
+    setBusy(project.id)
     try {
       const remaining = (project.assets || []).filter(item => item.assetId !== asset.assetId)
       await updateDoc(doc(db, 'projects', project.id), { assets: remaining, updatedAt: serverTimestamp() })
@@ -87,13 +165,15 @@ export default function ProjectsSection({ onNotice }) {
       onNotice?.('تمت إزالة مرجع الملف من المشروع.')
     } catch (err) {
       setError('تعذر تحديث بيانات المشروع.')
+    } finally {
+      setBusy('')
     }
   }
 
   return (
     <section className="section-block projects-workspace" id="projects">
       <div className="section-heading">
-        <div><div className="section-kicker">YOUR IDEAS, YOUR SPACE</div><h2>مشروعاتي وملفاتي</h2><p>ارفع صورك وفيديوهاتك واحفظ روابطها داخل كل مشروع.</p></div>
+        <div><div className="section-kicker">YOUR IDEAS, YOUR SPACE</div><h2>مشروعاتي وملفاتي</h2><p>نظّم مشروعاتك، عدّل بياناتها، وتابع ملفاتك وتواريخ العمل.</p></div>
         <span className="roadmap-count">{projects.length} مشروع</span>
       </div>
       {error && <div className="projects-error" role="alert">{error}</div>}
@@ -101,23 +181,52 @@ export default function ProjectsSection({ onNotice }) {
         projects.length === 0 ? <div className="projects-empty"><FolderOpen size={27} /><strong>لسه مفيش مشروعات</strong><span>أنشئ مشروعك الأول من زر «ابدأ مشروعاً جديداً» أعلى الصفحة.</span></div> :
         <div className="projects-grid">{projects.map(project => {
           const assets = project.assets || []
+          const isEditing = editingId === project.id
+          const isExpanded = expandedId === project.id
           return <article className="project-card" key={project.id}>
-            <div className="project-card-head"><div className="project-card-icon"><FolderOpen size={19} /></div><div><h3>{project.name}</h3><span>{project.discipline || 'مشروع عام'} • {assets.length} ملف</span></div></div>
-            <input ref={node => { fileInputs.current[project.id] = node }} type="file" accept="image/*,video/*" multiple hidden onChange={event => uploadFiles(project, event.target.files)} />
-            <button className="project-upload-btn" disabled={busy === project.id} onClick={() => fileInputs.current[project.id]?.click()}>
-              {busy === project.id ? <LoaderCircle className="spin" size={17} /> : <CloudUpload size={17} />}
-              {busy === project.id ? 'جارٍ الرفع...' : 'رفع صور أو فيديوهات'}
-            </button>
-            {assets.length > 0 && <div className="project-assets">{assets.map(asset => <div className="project-asset" key={asset.assetId}>
-              <a href={asset.url} target="_blank" rel="noreferrer" className="project-asset-preview">
-                {asset.resourceType === 'video' ? <><Film size={23} /><small>فيديو</small></> : <img src={asset.url} alt={asset.originalName} loading="lazy" />}
-              </a>
-              <div className="project-asset-info"><span>{asset.originalName}</span><small>{asset.format?.toUpperCase()} • {Math.max(1, Math.round(asset.bytes / 1024))} KB</small></div>
-              <button className="project-asset-remove" title="إزالة من المشروع" onClick={() => removeAssetRecord(project, asset)}><Trash2 size={15} /></button>
-            </div>)}</div>}
+            {isEditing ? (
+              <form className="project-edit-form" onSubmit={saveProject}>
+                <div className="project-edit-heading"><strong>تعديل بيانات المشروع</strong><button type="button" className="project-icon-action" onClick={() => setEditingId('')} aria-label="إلغاء"><X size={16} /></button></div>
+                <label>اسم المشروع<input value={editName} onChange={event => setEditName(event.target.value)} maxLength={80} required /></label>
+                <label>المجال الفني<select value={editDiscipline} onChange={event => setEditDiscipline(event.target.value)}>{disciplines.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+                <div className="project-edit-actions"><button type="button" className="project-secondary-btn" onClick={() => setEditingId('')}>إلغاء</button><button type="submit" className="project-save-btn" disabled={busy === project.id || !editName.trim()}>{busy === project.id ? <LoaderCircle className="spin" size={15} /> : <Check size={15} />} حفظ التعديلات</button></div>
+              </form>
+            ) : (
+              <>
+                <div className="project-card-head">
+                  <div className="project-card-icon"><FolderOpen size={19} /></div>
+                  <div className="project-title-copy"><h3>{project.name || 'مشروع بدون اسم'}</h3><span>{disciplineName(project.discipline)} • {assets.length} ملف</span></div>
+                  <div className="project-card-actions">
+                    <button className="project-icon-action" title="تعديل المشروع" aria-label="تعديل المشروع" onClick={() => beginEdit(project)}><Pencil size={15} /></button>
+                    <button className="project-icon-action danger" title="حذف المشروع" aria-label="حذف المشروع" disabled={busy === project.id} onClick={() => removeProject(project)}><Trash2 size={15} /></button>
+                  </div>
+                </div>
+                <input ref={node => { fileInputs.current[project.id] = node }} type="file" accept="image/*,video/*" multiple hidden onChange={event => uploadFiles(project, event.target.files)} />
+                <button className="project-upload-btn" disabled={busy === project.id} onClick={() => fileInputs.current[project.id]?.click()}>
+                  {busy === project.id ? <LoaderCircle className="spin" size={17} /> : <CloudUpload size={17} />}
+                  {busy === project.id ? 'جارٍ تنفيذ العملية...' : 'رفع صور أو فيديوهات'}
+                </button>
+                <button className="project-details-toggle" onClick={() => setExpandedId(isExpanded ? '' : project.id)} aria-expanded={isExpanded}>
+                  <span>{isExpanded ? 'إخفاء التفاصيل' : 'تفاصيل المشروع'}</span><ChevronDown size={15} className={isExpanded ? 'rotated' : ''} />
+                </button>
+                {isExpanded && <div className="project-meta-grid">
+                  <div><CalendarDays size={14} /><span>تاريخ الإنشاء</span><strong>{formatDate(project.createdAt)}</strong></div>
+                  <div><Clock3 size={14} /><span>آخر تحديث</span><strong>{formatDate(project.updatedAt)}</strong></div>
+                  <div><FileImage size={14} /><span>عدد الملفات</span><strong>{assets.length} ملف</strong></div>
+                </div>}
+                {assets.length > 0 && <div className="project-assets">{assets.map(asset => <div className="project-asset" key={asset.assetId}>
+                  <a href={asset.url} target="_blank" rel="noreferrer" className="project-asset-preview" aria-label={`فتح ${asset.originalName}`}>
+                    {asset.resourceType === 'video' ? <><Film size={23} /><small>فيديو</small></> : <img src={asset.url} alt={asset.originalName} loading="lazy" />}
+                  </a>
+                  <div className="project-asset-info"><span>{asset.originalName}</span><small>{asset.format?.toUpperCase()} • {Math.max(1, Math.round((asset.bytes || 0) / 1024))} KB</small></div>
+                  <a className="project-asset-open" href={asset.url} target="_blank" rel="noreferrer" title="فتح الملف"><ExternalLink size={14} /></a>
+                  <button className="project-asset-remove" title="إزالة من المشروع" aria-label="إزالة الملف من المشروع" disabled={busy === project.id} onClick={() => removeAssetRecord(project, asset)}><Trash2 size={15} /></button>
+                </div>)}</div>}
+              </>
+            )}
           </article>
         })}</div>}
-      <p className="projects-note"><FileImage size={14} /> الملفات محفوظة على Cloudinary، وبياناتها وروابطها محفوظة في Firestore.</p>
+      <p className="projects-note"><FileImage size={14} /> الملفات محفوظة على Cloudinary، وبياناتها وروابطها محفوظة في Firestore. حذف المشروع لا يحذف الملفات الأصلية.</p>
     </section>
   )
 }
