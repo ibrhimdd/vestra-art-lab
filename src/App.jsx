@@ -19,6 +19,7 @@ const IdeaGeneratorSection = lazy(() => import('./components/IdeaGeneratorSectio
 const DesignAnalyzerSection = lazy(() => import('./components/DesignAnalyzerSection'))
 const VirtualTryOnSection = lazy(() => import('./components/VirtualTryOnSection'))
 const PatternExplorerSection = lazy(() => import('./components/PatternExplorerSection'))
+const FashionDesignStudioSection = lazy(() => import('./components/FashionDesignStudioSection'))
 const ProfileSection = lazy(() => import('./components/ProfileSection'))
 
 
@@ -36,7 +37,8 @@ const tools = [
   { id: 'materials-library', title: 'مكتبة الخامات', desc: 'استكشف الخامات والأنسجة والنقوش.', icon: SwatchBook, tag: 'مكتبة فنية', status: 'متاح الآن' },
   { id: 'color-studio', title: 'استوديو الألوان', desc: 'استخرج الألوان من الصور وكون لوحاتك واحفظها.', icon: Palette, tag: 'تصميم', status: 'متاح الآن' },
   { id: 'pattern-explorer', title: 'مستكشف النقوش', desc: 'أنشئ وحدات زخرفية متكررة وصدّرها بصيغ SVG وPNG.', icon: Grid3X3, tag: 'زخرفة وأنماط', status: 'متاح الآن' },
-  { id: 'virtual-try-on', title: 'التجربة الافتراضية', desc: 'جرّب قطعة ملابس على بث الكاميرا مباشرة باستخدام محرك Decart.', icon: Sparkles, tag: 'تجربة بالذكاء الاصطناعي', status: 'يتطلب مفتاح Decart' },
+  { id: 'fashion-studio', title: 'استوديو تصميم الأزياء', desc: 'صمّم القماش والنقوش ثم اختر قصة القطعة وراجع التصميم قبل التجربة الافتراضية.', icon: SwatchBook, tag: 'تصميم أزياء متكامل', status: 'متاح الآن' },
+  { id: 'virtual-try-on', title: 'التجربة الافتراضية', desc: 'جرّب قطعة ملابس على بث الكاميرا مباشرة باستخدام محرك Decart.', icon: Sparkles, tag: 'تجربة بالذكاء الاصطناعي', status: 'متاح الآن' },
 ]
 
 const roadmap = [
@@ -54,13 +56,13 @@ const roadmap = [
 const routePaths = { overview: '/', disciplines: '/disciplines', tools: '/tools',
 'idea-generator': '/tools/idea-generator', 'design-analyzer': '/tools/design-analyzer',
 moodboard: '/tools/moodboard', 'materials-library': '/tools/materials-library',
-'color-studio': '/tools/color-studio', 'virtual-try-on': '/tools/virtual-try-on', 'pattern-explorer': '/tools/pattern-explorer',
+'color-studio': '/tools/color-studio', 'fashion-studio': '/tools/fashion-studio', 'virtual-try-on': '/tools/virtual-try-on', 'pattern-explorer': '/tools/pattern-explorer',
 projects: '/projects', roadmap: '/roadmap', profile: '/profile',
 'discipline-fashion': '/disciplines/fashion', 'discipline-art': '/disciplines/art',
 'discipline-digital': '/disciplines/digital', 'discipline-decor': '/disciplines/decor' };
 const routeTitles = { overview: 'نظرة عامة', disciplines: 'المجالات الفنية', tools: 'أدوات المختبر',
 'idea-generator': 'مولّد الأفكار', 'design-analyzer': 'محلل التصميم', moodboard: 'لوحة الإلهام',
-'materials-library': 'مكتبة الخامات', 'color-studio': 'استوديو الألوان', 'virtual-try-on': 'التجربة الافتراضية', 'pattern-explorer': 'مستكشف النقوش',
+'materials-library': 'مكتبة الخامات', 'color-studio': 'استوديو الألوان', 'fashion-studio': 'استوديو تصميم الأزياء', 'virtual-try-on': 'التجربة الافتراضية', 'pattern-explorer': 'مستكشف النقوش',
 projects: 'مشروعاتي وملفاتي', roadmap: 'خطة التطوير', profile: 'ملفي الشخصي',
 'discipline-fashion': 'الملابس والنسيج', 'discipline-art': 'التربية الفنية', 'discipline-digital': 'التصميم الرقمي', 'discipline-decor': 'الفنون الزخرفية' };
 function getRouteFromPath(path) { const normalized = path.length > 1 ? (path.endsWith('/') ? path.slice(0, -1) : path) : path; return Object.keys(routePaths).find(key => routePaths[key] === normalized) || 'overview'; }
@@ -71,6 +73,7 @@ function App() {
   const [projectName, setProjectName] = useState('')
   const [showProject, setShowProject] = useState(false)
   const [notice, setNotice] = useState('')
+  const [tryOnDesign, setTryOnDesign] = useState(null)
   const { user, loading, logout } = useAuth()
 
   useEffect(() => { const sync = () => setActive(getRouteFromPath(window.location.pathname)); window.addEventListener('popstate', sync); return () => window.removeEventListener('popstate', sync) }, [])
@@ -138,7 +141,7 @@ function App() {
         <nav className="side-nav">
           {nav.map(item => {
             const Icon = item.icon
-            return <button key={item.id} className={(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio', 'materials-library', 'idea-generator', 'design-analyzer', 'virtual-try-on'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) ? 'nav-item active' : 'nav-item'} onClick={() => goTo(item.id)}><Icon size={18} /><span>{item.label}</span>{(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) && <i />}</button>
+            return <button key={item.id} className={(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio', 'materials-library', 'idea-generator', 'design-analyzer', 'fashion-studio', 'virtual-try-on'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) ? 'nav-item active' : 'nav-item'} onClick={() => goTo(item.id)}><Icon size={18} /><span>{item.label}</span>{(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) && <i />}</button>
           })}
         </nav>
         <div className="side-divider" />
@@ -202,7 +205,8 @@ function App() {
           {active === 'materials-library' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مكتبة الخامات...</div>}><MaterialsLibrarySection user={user} onNotice={setNotice} /></Suspense>}
           {active === 'idea-generator' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مولّد الأفكار...</div>}><IdeaGeneratorSection user={user} onNotice={setNotice} /></Suspense>}
           {active === 'design-analyzer' && <Suspense fallback={<div className="route-loading">جارٍ تحميل محلل التصميم...</div>}><DesignAnalyzerSection onNotice={setNotice} /></Suspense>}
-          {active === 'virtual-try-on' && <Suspense fallback={<div className="route-loading">جارٍ تحميل التجربة الافتراضية...</div>}><VirtualTryOnSection user={user} onNotice={setNotice} /></Suspense>}
+          {active === 'fashion-studio' && <Suspense fallback={<div className="route-loading">جارٍ تحميل استوديو تصميم الأزياء...</div>}><FashionDesignStudioSection user={user} onNotice={setNotice} onTryOn={design => { setTryOnDesign(design); goTo('virtual-try-on') }} /></Suspense>}
+          {active === 'virtual-try-on' && <Suspense fallback={<div className="route-loading">جارٍ تحميل التجربة الافتراضية...</div>}><VirtualTryOnSection user={user} onNotice={setNotice} initialDesign={tryOnDesign} /></Suspense>}
           {active === 'pattern-explorer' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مستكشف النقوش...</div>}><PatternExplorerSection user={user} onNotice={setNotice} /></Suspense>}
 
           {active === 'profile' && <Suspense fallback={<div className="route-loading">جارٍ تحميل الملف الشخصي...</div>}><ProfileSection onNotice={setNotice} /></Suspense>}
