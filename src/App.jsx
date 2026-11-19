@@ -59,6 +59,7 @@ function getRouteFromPath(path) { const normalized = path.length > 1 ? (path.end
 function App() {
   const [active, setActive] = useState(() => getRouteFromPath(window.location.pathname))
   const [menuOpen, setMenuOpen] = useState(false)
+  const [selectedDiscipline, setSelectedDiscipline] = useState('')
   const [projectName, setProjectName] = useState('')
   const [showProject, setShowProject] = useState(false)
   const [notice, setNotice] = useState('')
@@ -196,7 +197,22 @@ function App() {
 
           {active === 'roadmap' && <><section className="section-block roadmap-section" id="roadmap"><div className="section-heading"><div><div className="section-kicker">FROM IDEA TO REALITY</div><h2>رحلة بناء المختبر</h2><p>خطة واضحة للمراحل والوظائف التي سننفذها بالترتيب.</p></div><span className="roadmap-count">09 مراحل رئيسية</span></div><div className="roadmap-list">{roadmap.map((step, i) => <div className={`roadmap-item ${step.active ? 'current' : ''} ${step.done ? 'completed' : ''}`} key={step.n}><div className="roadmap-marker">{step.active || step.done ? <Check size={16} /> : step.n}</div><div className="roadmap-copy"><h3>{step.title}</h3><p>{step.desc}</p></div><span className="roadmap-state">{step.state}</span>{i !== roadmap.length - 1 && <div className="roadmap-connector" />}</div>)}</div></section>
 
-          </>}<footer className="footer"><div className="footer-brand"><span>VESTRA</span> ART LAB</div><p>مساحة جامعية للإبداع والتجريب والتعلم الذكي.</p><span>BUILT FOR CREATIVITY <b>✳</b> 2026</span></footer>
+          </>}          {activeTool && !['moodboard', 'color-studio'].includes(active) && <section className="route-placeholder section-block">
+            <div className="route-placeholder-icon"><activeTool.icon size={27}/></div>
+            <div className="section-kicker">{activeTool.tag.toUpperCase()} / VESTRA TOOL</div>
+            <h1>{activeTool.title}</h1><p>{activeTool.desc}</p>
+            <span className="route-status">{activeTool.status === 'متاح الآن' ? 'الأداة متاحة' : 'ضمن خطة التطوير'}</span>
+            <div className="route-placeholder-note">هذه صفحة مستقلة للأداة. ستضاف وظائفها وتجاربها هنا دون التأثير على بقية صفحات المختبر.</div>
+            <button className="primary-btn" onClick={() => goTo('tools')}><ArrowLeft size={16}/> العودة إلى أدوات المختبر</button>
+          </section>}
+          {activeDiscipline && <section className="route-placeholder section-block">
+            <div className="route-placeholder-icon"><activeDiscipline.icon size={27}/></div>
+            <div className="section-kicker">CREATIVE DISCIPLINE / VESTRA</div>
+            <h1>{activeDiscipline.title}</h1><p>{activeDiscipline.desc}</p>
+            <div className="route-placeholder-note">هذه مساحة مستقلة للمجال، وستُجمع فيها أدواته ومشروعاته ومراجعه المتخصصة.</div>
+            <button className="primary-btn" onClick={() => goTo('tools')}><WandSparkles size={16}/> تصفح أدوات المختبر</button>
+          </section>}
+          <footer className="footer"><div className="footer-brand"><span>VESTRA</span> ART LAB</div><p>مساحة جامعية للإبداع والتجريب والتعلم الذكي.</p><span>BUILT FOR CREATIVITY <b>✳</b> 2026</span></footer>
         </div>
       </main>
 
