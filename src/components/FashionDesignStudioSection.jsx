@@ -63,6 +63,7 @@ const firstLayer=()=>({id:uid(),catalogId:'tee',category:'bodies',name:'تيشي
 export default function FashionDesignStudioSection({user,onNotice,onTryOn}){
  const [layers,setLayers]=useState(()=>[firstLayer()])
  const [selected,setSelected]=useState('')
+ useEffect(()=>{if(!selected&&layers[0])setSelected(layers[0].id)},[selected,layers])
  const [category,setCategory]=useState('bodies')
  const [tool,setTool]=useState('select')
  const [color,setColor]=useState('#d6f36a')
