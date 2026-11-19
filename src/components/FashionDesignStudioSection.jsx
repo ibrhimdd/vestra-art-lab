@@ -15,7 +15,9 @@ const fallbackPattern = { name: 'نقشة هندسية', type: 'diamonds', backg
 const defaultDesign = { name: 'تصميم جديد', garment: 'tee', fabricName: 'قماش قطني', fabricColor: '#d6f36a', fabricTexture: 'قطن ناعم', pattern: fallbackPattern, fit: 'مريح', length: 'عادي', sleeve: 'قصير', neckline: 'دائري', notes: '' }
 
 function patternMarkup(pattern) {
-  const p = pattern || fallbackPattern
+  const source = pattern || fallbackPattern
+  const safeHex = value => /^#[0-9a-f]{3,8}$/i.test(String(value || '')) ? value : '#777777'
+  const p = { ...source, background: safeHex(source.background), primary: safeHex(source.primary), secondary: safeHex(source.secondary), accent: safeHex(source.accent) }
   const size = Math.max(24, Math.min(140, Number(p.tile) || 72))
   const type = p.type || 'diamonds'
   let motif = ''
@@ -94,14 +96,14 @@ export default function FashionDesignStudioSection({ user, onNotice, onTryOn }) 
   const previewSvg = useMemo(() => garmentSvg(design), [design])
   const selectedGarment = garmentTypes.find(item => item.id === design.garment) || garmentTypes[0]
 
-  const chooseMaterial = material => setDesign(current => ({ ...current, fabricName: material.name, fabricColor: material.color || current.fabricColor, fabricTexture: material.description || material.category || 'خامة مختارة' }))
+  const chooseMaterial = material => setDesign(current => ({ ...current, fabricName: material.name, fabricColor: material.color || current.fabricColor, fabricTexture: material.description || material.category || 'خامة مختارة', pattern: { ...current.pattern, background: material.color || current.pattern.background } }))
   const choosePattern = pattern => setDesign(current => ({ ...current, pattern: { ...fallbackPattern, ...pattern } }))
 
   const saveDesign = async () => {
     if (!user?.uid || !db) { onNotice?.('سجّل الدخول لحفظ التصميم.'); return }
     setSaving(true)
     try {
-      const item = { ...design, id: `fashion-${Date.now()}`, title: design.name.trim() || selectedGarment.label, previewSvg, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+      const item = { ...design, ideaBrief: idea, id: `fashion-${Date.now()}`, title: design.name.trim() || selectedGarment.label, previewSvg, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
       const next = [item, ...saved.filter(entry => entry.id !== item.id)].slice(0, 30)
       await setDoc(doc(db, 'users', user.uid), { uid: user.uid, fashionDesigns: next, updatedAt: serverTimestamp() }, { merge: true })
       setSaved(next)
@@ -135,8 +137,9 @@ export default function FashionDesignStudioSection({ user, onNotice, onTryOn }) 
         {step === 'fabric' && <div className="fashion-panel-content">
           <div className="fashion-panel-title"><div><span>01 / FABRIC DESIGN</span><h3>ابدأ بتصميم القماش</h3><p>اختر خامة من مكتبتك أو ابدأ بخامة جديدة، ثم اضبط ألوان النقشة.</p></div><div className="fashion-panel-icon"><Layers3 size={19}/></div></div>
           {materials.length > 0 && <div className="fashion-library-strip"><strong>خاماتك المحفوظة</strong><div>{materials.slice(0,5).map(item => <button key={item.id} className={design.fabricName === item.name ? 'selected' : ''} onClick={() => chooseMaterial(item)}><i style={{background:item.color || '#8b9c76'}}/><span>{item.name}</span></button>)}</div></div>}
+          <label className="fashion-field">فكرة التصميم أو وصفه<input value={idea} onChange={e => setIdea(e.target.value)} placeholder="مثلاً: مجموعة شبابية مستوحاة من البحر"/></label>
           <label className="fashion-field">اسم القماش<input value={design.fabricName} onChange={e => update('fabricName',e.target.value)} placeholder="مثلاً: كتان مطبوع"/></label>
-          <div className="fashion-fields-two"><label className="fashion-field">نوع / ملمس القماش<input value={design.fabricTexture} onChange={e => update('fabricTexture',e.target.value)} placeholder="قطن، كتان، حرير..."/></label><label className="fashion-field">اللون الأساسي<input type="color" value={design.fabricColor} onChange={e => update('fabricColor',e.target.value)}/></label></div>
+          <div className="fashion-fields-two"><label className="fashion-field">نوع / ملمس القماش<input value={design.fabricTexture} onChange={e => update('fabricTexture',e.target.value)} placeholder="قطن، كتان، حرير..."/></label><label className="fashion-field">اللون الأساسي<input type="color" value={design.fabricColor} onChange={e => { update('fabricColor',e.target.value); updatePattern('background',e.target.value) }}/></label></div>
           <div className="fashion-subheading"><strong>النقوش المحفوظة</strong><span>{patterns.length} نقش</span></div>
           <div className="fashion-pattern-list">{(patterns.length ? patterns.slice(0,8) : [fallbackPattern]).map((item,index) => <button key={item.id || index} className={design.pattern.name === item.name && design.pattern.type === item.type ? 'selected' : ''} onClick={() => choosePattern(item)}><span className="fashion-pattern-swatch" style={{background:`repeating-linear-gradient(45deg,${item.primary || fallbackPattern.primary} 0 7px,${item.background || fallbackPattern.background} 7px 14px)`}}/><span>{item.name || 'نقش محفوظ'}</span><small>{item.type || 'نقش'}</small></button>)}</div>
           <div className="fashion-custom-pattern"><div className="fashion-subheading"><strong>تخصيص ألوان النقشة</strong><span>LIVE EDIT</span></div><div className="fashion-color-controls">{[['background','الخلفية'],['primary','الرئيسي'],['secondary','الثانوي'],['accent','التفاصيل']].map(([key,label])=><label key={key}><span>{label}</span><input type="color" value={design.pattern[key] || '#ffffff'} onChange={e => updatePattern(key,e.target.value)}/></label>)}</div></div>
@@ -164,7 +167,7 @@ export default function FashionDesignStudioSection({ user, onNotice, onTryOn }) 
       <aside className="fashion-preview-panel"><div className="fashion-preview-top"><div><span>LIVE PREVIEW / 001</span><strong>معاينة القطعة</strong></div><span className="fashion-live-dot">LIVE</span></div><div className="fashion-preview-stage"><div className="fashion-preview-glow"/><div className="fashion-garment-svg" dangerouslySetInnerHTML={{__html:previewSvg}}/></div><div className="fashion-preview-caption"><strong>{design.name || selectedGarment.label}</strong><span>{selectedGarment.label} · {design.fabricName}</span></div><div className="fashion-preview-meta"><div><small>نوع القماش</small><strong>{design.fabricTexture || 'غير محدد'}</strong></div><div><small>النقشة</small><strong>{design.pattern.name || 'مخصصة'}</strong></div></div><button className="fashion-tryon-btn" onClick={continueTryOn}><Sparkles size={16}/> جرّب التصميم افتراضياً <ArrowLeft size={15}/></button><small className="fashion-preview-hint">يتم تجهيز معاينة SVG للتصميم؛ التجربة الافتراضية تحتاج صورة ملابس واضحة ومناسبة لمحرك Decart.</small></aside>
     </div>
 
-    {showSaved && <div className="fashion-saved-section"><div className="fashion-subheading"><strong>تصميماتك المحفوظة</strong><button onClick={() => setShowSaved(false)}>إغلاق</button></div>{saved.length ? <div className="fashion-saved-grid">{saved.map(item=><button key={item.id} onClick={() => {setDesign({...defaultDesign,...item});setStep('review');setShowSaved(false)}}><span>{item.title || item.name}</span><small>{item.fabricName} · {garmentTypes.find(g=>g.id===item.garment)?.label || 'قطعة'}</small></button>)}</div> : <p>لم تحفظ تصميمات بعد. أكمل تصميمك واحفظه لتجده هنا.</p>}</div>}
+    {showSaved && <div className="fashion-saved-section"><div className="fashion-subheading"><strong>تصميماتك المحفوظة</strong><button onClick={() => setShowSaved(false)}>إغلاق</button></div>{saved.length ? <div className="fashion-saved-grid">{saved.map(item=><button key={item.id} onClick={() => {setDesign({...defaultDesign,...item});setIdea(item.ideaBrief || '');setStep('review');setShowSaved(false)}}><span>{item.title || item.name}</span><small>{item.fabricName} · {garmentTypes.find(g=>g.id===item.garment)?.label || 'قطعة'}</small></button>)}</div> : <p>لم تحفظ تصميمات بعد. أكمل تصميمك واحفظه لتجده هنا.</p>}</div>}
     {loading && <div className="fashion-loading">جارٍ تحميل خاماتك ونقوشك المحفوظة...</div>}
   </section>
 }
