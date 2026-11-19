@@ -13,6 +13,7 @@
     │   └── AI_HANDOFF.md
     ├── src/
     │   ├── App.jsx
+    │   ├── pages/ (مستهدف لفصل الشاشات إلى ملفات مستقلة تدريجياً)
     │   ├── main.jsx
     │   └── styles.css
     ├── .env.example
@@ -104,3 +105,17 @@
 - العرض: قراءة secureUrl من Firestore وعرض الملف.
 - الحذف: endpoint خادمي يتحقق من الهوية والملكية ثم يحذف publicId من Cloudinary ويحدث Firestore.
 - لا تستخدم API Secret داخل المتصفح.
+
+
+## 7. خريطة الصفحات والمسارات الحالية
+- `/` — نظرة عامة.
+- `/disciplines` — دليل المجالات الفنية، مع صفحة منفصلة لكل مجال تحت `/disciplines/:discipline`.
+- `/tools` — فهرس الأدوات.
+- `/tools/moodboard` — لوحة الإلهام.
+- `/tools/color-studio` — استوديو الألوان.
+- `/tools/idea-generator` و`/tools/design-analyzer` و`/tools/materials-library` و`/tools/virtual-try-on` — صفحات مستقلة للأدوات المخططة، تعرض حالة التطوير إلى حين تنفيذ الوظائف.
+- `/projects` — المشروعات والملفات.
+- `/profile` — الملف الشخصي.
+- `/roadmap` — خطة التطوير.
+
+التوجيه الحالي خفيف داخل `src/App.jsx` باستخدام History API و`popstate`؛ يجب اختبار فتح الروابط المباشرة وإعادة التحميل على Vercel. الخطة المستقبلية فصل كل صفحة إلى `src/pages/` ومكونات تخطيط مستقلة عند نمو التطبيق.
