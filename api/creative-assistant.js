@@ -103,35 +103,83 @@ export default async function handler(req, res) {
       return res.status(503).json({ error: 'المساعد الذكي غير مهيأ بعد. أضف إعدادات مزود الذكاء الاصطناعي في Vercel.' })
     }
 
-    const endpoint = `${baseUrl.replace(/\/+$/, '')}/chat/completions`
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: prompt.system },
-          { role: 'user', content: prompt.user.slice(0, MAX_TEXT) },
-        ],
-        temperature: 0.8,
-        max_tokens: 1200,
-      }),
+    const endpoint = `${baseUrl.replace(/\\/+$/, '')}/chat/completions`
+    const messages = [
+      { role: 'system', content: prompt.system },
+      { role: 'user', content: prompt.user.slice(0, MAX_TEXT) },
+    ]
+
+    // Gemini can temporarily return 503 when model capacity is busy.
+    // Retry briefly, then use a lighter Gemini fallback before returning an error.
+    const fallbackModel = process.env.AI_FALLBACK_MODEL
+      || (baseUrl.includes('generativelanguage.googleapis.com') ? 'gemini-3.5-flash-lite' : '')
+    const modelsToTry = [model, ...(fallbackModel && fallbackModel !== model ? [fallbackModel] : [])]
+    let lastStatus = 502
+    let lastError = 'Unknown provider error'
+
+    for (const selectedModel of modelsToTry) {
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        let response
+        try {
+          response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: selectedModel,
+              messages,
+              max_tokens: 1200,
+            }),
+          })
+        } catch (error) {
+          lastStatus = 502
+          lastError = error?.message || 'Network request failed'
+          if (attempt === 0) {
+            await new Promise(resolve => setTimeout(resolve, 700))
+            continue
+          }
+          break
+        }
+
+        const raw = await response.text()
+        let result = {}
+        try { result = raw ? JSON.parse(raw) : {} } catch { result = {} }
+
+        if (response.ok) {
+          const answer = result.choices?.[0]?.message?.content
+          if (typeof answer === 'string' && answer.trim()) {
+            return res.status(200).json({ text: answer.trim(), model: selectedModel })
+          }
+          lastStatus = 502
+          lastError = 'Provider returned an empty response'
+          break
+        }
+
+        lastStatus = response.status
+        lastError = result?.error?.message
+          || result?.message
+          || (raw ? raw.slice(0, 500) : 'Unknown provider error')
+
+        if ([429, 500, 502, 503, 504].includes(response.status) && attempt === 0) {
+          const retryAfter = Number(response.headers.get('retry-after'))
+          const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
+            ? Math.min(retryAfter * 1000, 2500)
+            : 700
+          await new Promise(resolve => setTimeout(resolve, waitMs))
+          continue
+        }
+        break
+      }
+    }
+
+    console.error('AI provider request failed after retries:', lastStatus, String(lastError).slice(0, 500))
+    return res.status(502).json({
+      error: lastStatus === 429 || lastStatus === 503
+        ? 'مزود الذكاء الاصطناعي مشغول حالياً. حاول مرة أخرى بعد قليل.'
+        : 'تعذر الحصول على رد من مزود الذكاء الاصطناعي. راجع إعدادات المزود وحاول مرة أخرى.',
     })
-
-    const result = await response.json().catch(() => ({}))
-    if (!response.ok) {
-      console.error('AI provider request failed:', response.status, result?.error?.message || 'Unknown provider error')
-      return res.status(502).json({ error: 'تعذر الحصول على رد من مزود الذكاء الاصطناعي. راجع إعدادات المزود وحاول مرة أخرى.' })
-    }
-
-    const text = result.choices?.[0]?.message?.content
-    if (typeof text !== 'string' || !text.trim()) {
-      return res.status(502).json({ error: 'وصل رد غير مكتمل من مزود الذكاء الاصطناعي.' })
-    }
-    return res.status(200).json({ text: text.trim(), model })
   } catch (error) {
     console.error('Creative assistant failed:', error?.message || error)
     return res.status(500).json({ error: 'حدث خطأ غير متوقع أثناء تشغيل المساعد الذكي.' })
