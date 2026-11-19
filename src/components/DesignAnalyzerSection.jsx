@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Activity, ImagePlus, LoaderCircle, ScanSearch, UploadCloud } from 'lucide-react'
 
 const MAX_SIZE = 12 * 1024 * 1024
@@ -8,6 +8,7 @@ export default function DesignAnalyzerSection({ onNotice }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const inputRef = useRef(null)
+  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
   const analyze = file => {
     if (!file) return
     if (!file.type.startsWith('image/')) { setError('اختر صورة تصميم بصيغة مدعومة.'); return }
@@ -32,9 +33,9 @@ export default function DesignAnalyzerSection({ onNotice }) {
         setAnalysis({width:image.naturalWidth,height:image.naturalHeight,ratio,brightness,contrast:range,colors,notes,average:'rgb('+avg.join(', ')+')'})
         onNotice?.('اكتمل الفحص البصري الأولي للصورة.')
       } catch(e){ setError('تعذر تحليل الصورة على هذا المتصفح.') }
-      finally { setBusy(false); URL.revokeObjectURL(url) }
+      finally { setBusy(false) }
     }
-    image.onerror=()=>{setError('تعذر فتح الصورة.');setBusy(false);URL.revokeObjectURL(url)}
+    image.onerror=()=>{setError('تعذر فتح الصورة.');setBusy(false)}
     image.src=url
   }
   return <section className="section-block analyzer-section"><div className="section-heading"><div><div className="section-kicker">OBSERVE · MEASURE · REFINE</div><h2>محلل التصميم</h2><p>ارفع صورة عملك للحصول على قراءة أولية للألوان والإضاءة والتباين ونسبة الأبعاد.</p></div></div>
