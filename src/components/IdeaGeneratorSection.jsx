@@ -78,15 +78,14 @@ export default function IdeaGeneratorSection({ user, onNotice }) {
           signal: controller.signal,
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ mode: 'idea', field, style, topic }),
-        }),
         })
         const raw = await response.text()
         try { data = raw ? JSON.parse(raw) : {} } catch { data = { error: raw || 'استجابة غير مفهومة من الخادم.' } }
       } finally {
         clearTimeout(timeoutId)
       }
-      if (!response.ok) throw new Error(data.error || 'تعذر الحصول على رد من المساعد الذكي.')
       if (!response.ok) throw new Error(data.error || 'تعذر توليد الفكرة.')
+      if (!data.text) throw new Error('وصل رد فارغ من مزود الذكاء الاصطناعي.')
       setAiText(data.text)
       setResult(true)
       onNotice?.('تم إعداد مقترح إبداعي بالذكاء الاصطناعي.')
