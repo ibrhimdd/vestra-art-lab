@@ -141,7 +141,7 @@ function App() {
         <nav className="side-nav">
           {nav.map(item => {
             const Icon = item.icon
-            return <button key={item.id} className={(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio', 'materials-library', 'idea-generator', 'design-analyzer', 'fashion-studio', 'virtual-try-on'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) ? 'nav-item active' : 'nav-item'} onClick={() => goTo(item.id)}><Icon size={18} /><span>{item.label}</span>{(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) && <i />}</button>
+            return <button key={item.id} className={(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio', 'materials-library', 'idea-generator', 'design-analyzer', 'fashion-studio', 'virtual-try-on'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) ? 'nav-item active' : 'nav-item'} onClick={() => goTo(item.id)}><Icon size={18} /><span>{item.label}</span>{(active === item.id || (item.id === 'tools' && activeTool && !['moodboard', 'color-studio', 'materials-library', 'idea-generator', 'design-analyzer', 'fashion-studio', 'virtual-try-on', 'pattern-explorer'].includes(active)) || (item.id === 'disciplines' && activeDiscipline)) && <i />}</button>
           })}
         </nav>
         <div className="side-divider" />
@@ -204,7 +204,7 @@ function App() {
 
           {active === 'materials-library' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مكتبة الخامات...</div>}><MaterialsLibrarySection user={user} onNotice={setNotice} /></Suspense>}
           {active === 'idea-generator' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مولّد الأفكار...</div>}><IdeaGeneratorSection user={user} onNotice={setNotice} /></Suspense>}
-          {active === 'design-analyzer' && <Suspense fallback={<div className="route-loading">جارٍ تحميل محلل التصميم...</div>}><DesignAnalyzerSection onNotice={setNotice} /></Suspense>}
+          {active === 'design-analyzer' && <Suspense fallback={<div className="route-loading">جارٍ تحميل محلل التصميم...</div>}><DesignAnalyzerSection user={user} onNotice={setNotice} /></Suspense>}
           {active === 'fashion-studio' && <Suspense fallback={<div className="route-loading">جارٍ تحميل استوديو تصميم الأزياء...</div>}><FashionDesignStudioSection user={user} onNotice={setNotice} onTryOn={design => { setTryOnDesign(design); goTo('virtual-try-on') }} /></Suspense>}
           {active === 'virtual-try-on' && <Suspense fallback={<div className="route-loading">جارٍ تحميل التجربة الافتراضية...</div>}><VirtualTryOnSection user={user} onNotice={setNotice} initialDesign={tryOnDesign} /></Suspense>}
           {active === 'pattern-explorer' && <Suspense fallback={<div className="route-loading">جارٍ تحميل مستكشف النقوش...</div>}><PatternExplorerSection user={user} onNotice={setNotice} /></Suspense>}
