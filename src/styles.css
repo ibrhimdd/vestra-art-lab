@@ -813,3 +813,21 @@ html{scroll-padding-top:84px}
 .fashion-text-modal textarea{width:100%;resize:vertical;min-height:84px;padding:11px;border:1px solid #526347;border-radius:9px;background:#101711;color:#fff;font:inherit;outline-color:#a7c66b}
 .fashion-text-modal>div:last-child{justify-content:flex-start}
 .fashion-text-modal>div:last-child button:last-child{background:#a7c66b;border-color:#a7c66b;color:#15200f;font-weight:700}
+
+/* Fixed fashion canvas workspace and Photoshop-like transform controls */
+.fashion-modular-toolbar.fashion-canvas-toolbar{position:sticky;top:0;z-index:8;margin:0;border:0;border-bottom:1px solid var(--line);border-radius:10px 10px 0 0;background:#171d19;padding:9px;box-shadow:0 8px 18px #0003}
+.fashion-canvas-toolbar .fashion-tool-group{gap:5px}
+.fashion-canvas-toolbar .fashion-tool-group button,.fashion-canvas-toolbar .fashion-tool-group label{padding:7px 8px;font-size:9px;white-space:nowrap}
+.fashion-modular-layout{align-items:start}
+.fashion-canvas-panel{position:sticky;top:10px;height:calc(100vh - 24px);min-height:570px;max-height:900px;overflow:hidden}
+.fashion-canvas{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+.fashion-canvas svg{max-height:calc(100vh - 230px);max-width:100%;object-fit:contain}
+.fashion-library-panel,.fashion-inspector{max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#667a4b #171d19}
+.fashion-component-grid{max-height:none}
+.fashion-layer-list{max-height:210px}
+.fashion-transform-frame{pointer-events:none}
+.fashion-transform-frame .fashion-rotate-handle,.fashion-transform-frame .fashion-scale-handle{pointer-events:all;cursor:grab;fill:#f2f7e9;stroke:#78994d;stroke-width:1.8;vector-effect:non-scaling-stroke}
+.fashion-transform-frame .fashion-rotate-handle{fill:#a7c66b;cursor:grab}
+.fashion-transform-frame .fashion-scale-handle:active,.fashion-transform-frame .fashion-rotate-handle:active{fill:#fff;cursor:grabbing}
+@media(max-width:1050px){.fashion-canvas-panel{position:sticky;top:8px;height:calc(100vh - 16px);min-height:520px}.fashion-inspector,.fashion-library-panel{max-height:calc(100vh - 16px)}}
+@media(max-width:700px){.fashion-modular-toolbar.fashion-canvas-toolbar{position:relative;top:auto;border-radius:9px 9px 0 0}.fashion-canvas-panel{position:relative;top:auto;height:auto;min-height:0;max-height:none}.fashion-canvas{min-height:390px;max-height:58vh}.fashion-canvas svg{max-height:56vh}.fashion-inspector,.fashion-library-panel{max-height:52vh}.fashion-modular-layout{align-items:stretch}}
