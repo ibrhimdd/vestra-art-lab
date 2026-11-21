@@ -802,3 +802,14 @@ html{scroll-padding-top:84px}
  .fashion-canvas svg{max-height:none}
  .fashion-bottom-actions>div{display:grid;grid-template-columns:1fr}
 }
+
+/* Accessible text insertion dialog for the fashion workspace */
+.fashion-text-modal-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;background:rgba(4,9,6,.72);backdrop-filter:blur(7px)}
+.fashion-text-modal{width:min(100%,430px);display:grid;gap:14px;padding:18px;border:1px solid #56634c;border-radius:14px;background:#182019;color:#edf2e8;box-shadow:0 24px 80px #0009}
+.fashion-text-modal>div{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fashion-text-modal>div strong{font-size:14px}
+.fashion-text-modal button{padding:8px 13px;border:1px solid #526347;border-radius:8px;background:#263323;color:#eaf3df;font:inherit;cursor:pointer}
+.fashion-text-modal button:disabled{opacity:.45;cursor:not-allowed}
+.fashion-text-modal textarea{width:100%;resize:vertical;min-height:84px;padding:11px;border:1px solid #526347;border-radius:9px;background:#101711;color:#fff;font:inherit;outline-color:#a7c66b}
+.fashion-text-modal>div:last-child{justify-content:flex-start}
+.fashion-text-modal>div:last-child button:last-child{background:#a7c66b;border-color:#a7c66b;color:#15200f;font-weight:700}
