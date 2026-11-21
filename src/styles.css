@@ -839,3 +839,14 @@ html{scroll-padding-top:84px}
  .fashion-modular-layout .fashion-library-panel{order:2}
  .fashion-canvas-toolbar .fashion-tool-group{justify-content:flex-start}
 }
+
+.fashion-canvas-toolbar{display:flex;align-items:center;justify-content:flex-start;gap:7px;flex-wrap:wrap}
+.fashion-tool-dropdown{position:relative;min-width:0}
+.fashion-tool-dropdown>summary{display:flex;align-items:center;gap:7px;min-height:35px;padding:7px 10px;border:1px solid #48583f;border-radius:7px;background:#222d20;color:#dce8d0;font-size:9px;font-weight:700;cursor:pointer;list-style:none;white-space:nowrap}
+.fashion-tool-dropdown>summary::-webkit-details-marker{display:none}
+.fashion-tool-dropdown>summary:after{content:'⌄';color:#a7c66b;font-size:13px}
+.fashion-tool-dropdown[open]>summary{border-color:#a7c66b;background:#303b28}
+.fashion-tool-dropdown>.fashion-tool-group{position:absolute;top:calc(100% + 7px);inset-inline-start:0;z-index:30;min-width:max-content;max-width:min(88vw,520px);padding:9px;border:1px solid #4b5b42;border-radius:9px;background:#171f19;box-shadow:0 14px 34px #0009;flex-wrap:wrap}
+.fashion-tool-dropdown .fashion-tool-group button,.fashion-tool-dropdown .fashion-tool-group label{font-size:10px}
+.fashion-view-controls>span{color:#dce8d0;font-size:10px;min-width:38px;text-align:center}
+@media(max-width:700px){.fashion-canvas-toolbar{gap:5px}.fashion-tool-dropdown>summary{font-size:8px;padding:7px 8px}.fashion-tool-dropdown>.fashion-tool-group{max-width:calc(100vw - 44px);min-width:0}.fashion-tool-dropdown .fashion-tool-group{justify-content:flex-start}}
