@@ -831,3 +831,11 @@ html{scroll-padding-top:84px}
 .fashion-transform-frame .fashion-scale-handle:active,.fashion-transform-frame .fashion-rotate-handle:active{fill:#fff;cursor:grabbing}
 @media(max-width:1050px){.fashion-canvas-panel{position:sticky;top:8px;height:calc(100vh - 16px);min-height:520px}.fashion-inspector,.fashion-library-panel{max-height:calc(100vh - 16px)}}
 @media(max-width:700px){.fashion-modular-toolbar.fashion-canvas-toolbar{position:relative;top:auto;border-radius:9px 9px 0 0}.fashion-canvas-panel{position:relative;top:auto;height:auto;min-height:0;max-height:none}.fashion-canvas{min-height:390px;max-height:58vh}.fashion-canvas svg{max-height:56vh}.fashion-inspector,.fashion-library-panel{max-height:52vh}.fashion-modular-layout{align-items:stretch}}
+
+@media(max-width:700px){
+ .fashion-modular-layout:not(.hide-layers),.fashion-modular-layout.hide-layers{grid-template-columns:1fr;display:flex;flex-direction:column}
+ .fashion-modular-layout .fashion-canvas-panel{order:0}
+ .fashion-modular-layout .fashion-inspector{order:1}
+ .fashion-modular-layout .fashion-library-panel{order:2}
+ .fashion-canvas-toolbar .fashion-tool-group{justify-content:flex-start}
+}
