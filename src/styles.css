@@ -937,3 +937,19 @@ html{scroll-padding-top:84px}
     max-height:55vh;
   }
 }
+
+
+/* VESTRA multi-select, grouped layers and SVG import */
+.fashion-import-svg{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:10px;padding:10px 12px;border:1px dashed #718b50;border-radius:8px;background:#222d20;color:#dce8d0;font-size:10px;font-weight:700;transition:.18s ease}
+.fashion-import-svg:hover{border-color:#c4e77d;background:#2d3a26;color:#f0f7e7;transform:translateY(-1px)}
+.fashion-layer-bulk-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.fashion-layer-bulk-actions button{padding:6px 8px;border:1px solid #46543e;border-radius:6px;background:#202820;color:#cbd8c0;font-size:8px}
+.fashion-layer-bulk-actions button:hover:not(:disabled){border-color:#a7c66b;color:#eff8e2}
+.fashion-layer-bulk-actions button:disabled{opacity:.4;cursor:not-allowed}
+.fashion-layer-list button.active{border-color:#a7c66b;background:#2c3925}
+.fashion-layer-list button.active .fashion-layer-color{outline:2px solid #a7c66b;outline-offset:2px}
+.fashion-inspector-heading small{display:block;margin-top:7px;color:#8f9e87;font-size:8px;line-height:1.7}
+.fashion-properties .fashion-group-note{padding:10px;border:1px solid #536447;border-radius:7px;background:#202b20;color:#cbd9c0;font-size:9px;line-height:1.8}
+@media(max-width:700px){.fashion-layer-bulk-actions button{flex:1 1 auto;min-height:34px;font-size:9px}.fashion-import-svg{min-height:40px;font-size:11px}}
+
+.fashion-layer-bulk-actions button.active{border-color:#a7c66b;background:#2b3624;color:#f0f7e7}
