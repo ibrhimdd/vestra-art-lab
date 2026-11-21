@@ -21,6 +21,22 @@ const CATALOG = {
   {id:'sleeve-bell',name:'كم جرس',path:'M190 120 L165 218 L105 390 L160 405 L215 205 Z M310 120 L355 145 L395 390 L340 405 L285 205 Z'},
   {id:'sleeve-kimono',name:'كم كيمونو',path:'M190 120 L115 155 L80 260 L125 280 L215 205 Z M310 120 L385 155 L420 260 L375 280 L285 205 Z'}
  ],
+ cuffs:[
+  {id:'cuff-straight',name:'أسورة مستقيمة',path:'M105 355 L150 365 L142 390 L105 380 Z M350 365 L395 355 L395 380 L358 390 Z'},
+  {id:'cuff-wide',name:'أسورة عريضة',path:'M105 350 L150 360 L140 405 L98 393 Z M350 360 L400 350 L402 393 L360 405 Z'},
+  {id:'cuff-ruffle',name:'أسورة بكشكشة',path:'M108 355 Q120 340 132 355 Q145 340 157 360 L145 395 Q130 382 115 395 Z M343 360 Q355 340 368 355 Q380 340 392 355 L385 395 Q370 382 355 395 Z'},
+  {id:'cuff-button',name:'أسورة بزر',path:'M105 355 L150 365 L142 390 L105 380 Z M350 365 L395 355 L395 380 L358 390 Z M128 372 m-4 0 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0 M372 372 m-4 0 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0'}
+ ],
+ hoods:[
+  {id:'hood-classic',name:'كابيشو كلاسيك',path:'M190 125 Q165 30 250 28 Q335 30 310 125 Q285 155 250 160 Q215 155 190 125 Z'},
+  {id:'hood-pointed',name:'كابيشو مدبب',path:'M190 125 Q165 35 250 15 Q335 35 310 125 L250 170 Z'},
+  {id:'hood-cowl',name:'كابيشو واسع',path:'M180 130 Q145 15 250 25 Q355 15 320 130 Q285 175 250 175 Q215 175 180 130 Z'}
+ ],
+ closures:[
+  {id:'closure-placket',name:'مرد أزرار',path:'M235 145 L265 145 L265 430 L235 430 Z'},
+  {id:'closure-double',name:'مرد مزدوج',path:'M225 145 L275 145 L275 430 L225 430 Z'},
+  {id:'closure-zip',name:'سحاب أمامي',path:'M248 145 L252 145 L252 430 L248 430 Z M240 160 L260 160 M240 185 L260 185 M240 210 L260 210 M240 235 L260 235 M240 260 L260 260 M240 285 L260 285 M240 310 L260 310 M240 335 L260 335 M240 360 L260 360 M240 385 L260 385',stroke:true}
+ ],
  collars:[
   {id:'collar-round',name:'ياقة دائرية',path:'M213 105 Q250 155 287 105 Q250 132 213 105 Z'},
   {id:'collar-v',name:'ياقة V',path:'M215 105 L250 165 L285 105 L270 102 L250 133 L230 102 Z'},
@@ -71,7 +87,7 @@ const buildDesignSvg=(layers,pattern)=>{
 }
 const blobToDataUrl=blob=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob)})
 const inlineDesignTextures=async(svg,layers)=>{let result=svg;for(const layer of layers){const href=layer.textureUrl||layer.texturePreview;if(!href)continue;try{const response=await fetch(href);if(!response.ok)continue;const data=await blobToDataUrl(await response.blob());result=result.split(href).join(data)}catch(error){console.warn('Texture embedding failed:',error)}}return result}
-const categories=[{id:'bodies',label:'الأجسام',icon:Shirt},{id:'sleeves',label:'الأكمام',icon:Scissors},{id:'collars',label:'الياقات',icon:Layers3},{id:'hems',label:'الحواف',icon:Layers3},{id:'pockets',label:'الجيوب',icon:Plus},{id:'details',label:'التفاصيل',icon:Sparkles},{id:'graphics',label:'الزخارف',icon:PenTool}]
+const categories=[{id:'bodies',label:'الأجسام',icon:Shirt},{id:'sleeves',label:'الأكمام',icon:Scissors},{id:'cuffs',label:'الأساور',icon:Scissors},{id:'hoods',label:'الكابيشو',icon:Shirt},{id:'closures',label:'الإغلاقات',icon:Layers3},{id:'collars',label:'الياقات',icon:Layers3},{id:'hems',label:'الحواف',icon:Layers3},{id:'pockets',label:'الجيوب',icon:Plus},{id:'details',label:'التفاصيل',icon:Sparkles},{id:'graphics',label:'الزخارف',icon:PenTool}]
 const uid=()=> 'layer-'+Date.now()+'-'+Math.random().toString(36).slice(2,7)
 const makeShapePath=(kind,a,b)=>{const left=Math.min(a.x,b.x),top=Math.min(a.y,b.y),width=Math.max(2,Math.abs(b.x-a.x)),height=Math.max(2,Math.abs(b.y-a.y));return kind==='rect'?'M '+left+' '+top+' H '+(left+width)+' V '+(top+height)+' H '+left+' Z':'M '+(left+width/2)+' '+top+' A '+(width/2)+' '+(height/2)+' 0 1 1 '+(left+width/2-0.01)+' '+top+' Z'}
 const buildPenPath=points=>{if(!points.length)return '';if(points.length===1)return 'M '+points[0].x+' '+points[0].y;if(points.length===2)return 'M '+points[0].x+' '+points[0].y+' L '+points[1].x+' '+points[1].y;let d='M '+points[0].x+' '+points[0].y;for(let i=0;i<points.length-1;i++){const p0=points[Math.max(0,i-1)],p1=points[i],p2=points[i+1],p3=points[Math.min(points.length-1,i+2)];const c1={x:p1.x+(p2.x-p0.x)/6,y:p1.y+(p2.y-p0.y)/6},c2={x:p2.x-(p3.x-p1.x)/6,y:p2.y-(p3.y-p1.y)/6};d+=' C '+c1.x+' '+c1.y+' '+c2.x+' '+c2.y+' '+p2.x+' '+p2.y}return d}
