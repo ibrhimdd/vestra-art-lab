@@ -813,3 +813,63 @@ html{scroll-padding-top:84px}
 .fashion-text-modal textarea{width:100%;resize:vertical;min-height:84px;padding:11px;border:1px solid #526347;border-radius:9px;background:#101711;color:#fff;font:inherit;outline-color:#a7c66b}
 .fashion-text-modal>div:last-child{justify-content:flex-start}
 .fashion-text-modal>div:last-child button:last-child{background:#a7c66b;border-color:#a7c66b;color:#15200f;font-weight:700}
+
+/* Fixed fashion canvas workspace and Photoshop-like transform controls */
+.fashion-modular-toolbar.fashion-canvas-toolbar{position:sticky;top:0;z-index:8;margin:0;border:0;border-bottom:1px solid var(--line);border-radius:10px 10px 0 0;background:#171d19;padding:9px;box-shadow:0 8px 18px #0003}
+.fashion-canvas-toolbar .fashion-tool-group{gap:5px}
+.fashion-canvas-toolbar .fashion-tool-group button,.fashion-canvas-toolbar .fashion-tool-group label{padding:7px 8px;font-size:9px;white-space:nowrap}
+.fashion-modular-layout{align-items:start}
+.fashion-canvas-panel{position:sticky;top:10px;height:calc(100vh - 24px);min-height:570px;max-height:900px;overflow:hidden}
+.fashion-canvas{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+.fashion-canvas svg{max-height:calc(100vh - 230px);max-width:100%;object-fit:contain}
+.fashion-library-panel,.fashion-inspector{max-height:calc(100vh - 24px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#667a4b #171d19}
+.fashion-component-grid{max-height:none}
+.fashion-layer-list{max-height:210px}
+.fashion-transform-frame{pointer-events:none}
+.fashion-transform-frame .fashion-rotate-handle,.fashion-transform-frame .fashion-scale-handle{pointer-events:all;cursor:grab;fill:#f2f7e9;stroke:#78994d;stroke-width:1.8;vector-effect:non-scaling-stroke}
+.fashion-transform-frame .fashion-rotate-handle{fill:#a7c66b;cursor:grab}
+.fashion-transform-frame .fashion-scale-handle:active,.fashion-transform-frame .fashion-rotate-handle:active{fill:#fff;cursor:grabbing}
+@media(max-width:1050px){.fashion-canvas-panel{position:sticky;top:8px;height:calc(100vh - 16px);min-height:520px}.fashion-inspector,.fashion-library-panel{max-height:calc(100vh - 16px)}}
+@media(max-width:700px){.fashion-modular-toolbar.fashion-canvas-toolbar{position:relative;top:auto;border-radius:9px 9px 0 0}.fashion-canvas-panel{position:relative;top:auto;height:auto;min-height:0;max-height:none}.fashion-canvas{min-height:390px;max-height:58vh}.fashion-canvas svg{max-height:56vh}.fashion-inspector,.fashion-library-panel{max-height:52vh}.fashion-modular-layout{align-items:stretch}}
+
+@media(max-width:700px){
+ .fashion-modular-layout:not(.hide-layers),.fashion-modular-layout.hide-layers{grid-template-columns:1fr;display:flex;flex-direction:column}
+ .fashion-modular-layout .fashion-canvas-panel{order:0}
+ .fashion-modular-layout .fashion-inspector{order:1}
+ .fashion-modular-layout .fashion-library-panel{order:2}
+ .fashion-canvas-toolbar .fashion-tool-group{justify-content:flex-start}
+}
+
+.fashion-canvas-toolbar{display:flex;align-items:center;justify-content:flex-start;gap:7px;flex-wrap:wrap}
+.fashion-tool-dropdown{position:relative;min-width:0}
+.fashion-tool-dropdown>summary{display:flex;align-items:center;gap:7px;min-height:35px;padding:7px 10px;border:1px solid #48583f;border-radius:7px;background:#222d20;color:#dce8d0;font-size:9px;font-weight:700;cursor:pointer;list-style:none;white-space:nowrap}
+.fashion-tool-dropdown>summary::-webkit-details-marker{display:none}
+.fashion-tool-dropdown>summary:after{content:'⌄';color:#a7c66b;font-size:13px}
+.fashion-tool-dropdown[open]>summary{border-color:#a7c66b;background:#303b28}
+.fashion-tool-dropdown>.fashion-tool-group{position:absolute;top:calc(100% + 7px);inset-inline-start:0;z-index:30;min-width:max-content;max-width:min(88vw,520px);padding:9px;border:1px solid #4b5b42;border-radius:9px;background:#171f19;box-shadow:0 14px 34px #0009;flex-wrap:wrap}
+.fashion-tool-dropdown .fashion-tool-group button,.fashion-tool-dropdown .fashion-tool-group label{font-size:10px}
+.fashion-view-controls>span{color:#dce8d0;font-size:10px;min-width:38px;text-align:center}
+@media(max-width:700px){.fashion-canvas-toolbar{gap:5px}.fashion-tool-dropdown>summary{font-size:8px;padding:7px 8px}.fashion-tool-dropdown>.fashion-tool-group{max-width:calc(100vw - 44px);min-width:0}.fashion-tool-dropdown .fashion-tool-group{justify-content:flex-start}}
+
+
+/* VESTRA single-open vertical tool accordion */
+.fashion-tool-dock{position:relative;z-index:12;display:grid;grid-template-columns:minmax(0,1fr);gap:7px;padding:9px 11px;border-bottom:1px solid var(--line);background:#171d19}
+.fashion-tool-dock-list{display:grid;grid-template-columns:1fr;gap:6px}
+.fashion-tool-dock-list>button{display:flex;align-items:center;justify-content:space-between;gap:9px;width:100%;min-height:39px;padding:9px 11px;border:1px solid #3b4939;border-radius:8px;background:#202820;color:#dce8d0;text-align:right;font:inherit;font-size:10px;font-weight:700;cursor:pointer;transition:background .16s,border-color .16s}
+.fashion-tool-dock-list>button.active,.fashion-tool-dock-list>button:hover{border-color:#a7c66b;background:#2b3624;color:#e9f5d9}
+.fashion-tool-menu{display:grid;grid-template-columns:1fr;gap:5px;padding:9px;border:1px solid #46563d;border-radius:9px;background:#111913;box-shadow:inset 0 1px #ffffff08;animation:fashion-menu-in .14s ease-out}
+.fashion-tool-menu>button{display:flex;align-items:center;justify-content:flex-start;gap:9px;width:100%;min-height:36px;padding:8px 10px;border:1px solid #344333;border-radius:7px;background:#202820;color:#dce8d0;text-align:right;font:inherit;font-size:10px;cursor:pointer}
+.fashion-tool-menu>button:hover,.fashion-tool-menu>button.active{border-color:#9ebd65;background:#2b3624;color:#e8f5d2}
+.fashion-tool-menu>button:disabled{opacity:.4;cursor:not-allowed}
+.fashion-tool-menu>button.danger{border-color:#70473f;color:#efb6a9}
+.fashion-tool-menu>button.danger:hover{background:#3b2522}
+.fashion-menu-field{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:7px 4px;color:#cbd8c0;font-size:10px}
+.fashion-menu-field input[type=color]{width:42px;height:30px;padding:2px;border:1px solid #45513e;border-radius:6px;background:#202820}
+.fashion-menu-field select{min-width:120px;padding:8px;border:1px solid #45513e;border-radius:6px;background:#202820;color:#edf2e8;font:inherit}
+.fashion-zoom-row{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:7px}
+.fashion-zoom-row button{display:grid;place-items:center;min-height:34px;padding:7px;border:1px solid #3b4939;border-radius:7px;background:#202820;color:#dce8d0;font-size:10px}
+.fashion-zoom-row strong{min-width:45px;color:#dce8d0;text-align:center;font:11px 'DM Mono'}
+.fashion-menu-selected-name{padding:3px 4px;color:#dce8d0;font-size:10px}
+.fashion-tool-menu>p{margin:0;padding:8px;color:#aab7a2;font-size:10px;line-height:1.7}
+@keyframes fashion-menu-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:700px){.fashion-tool-dock{padding:8px}.fashion-tool-dock-list>button{min-height:42px;font-size:11px}.fashion-tool-menu>button{min-height:40px;font-size:11px}}
