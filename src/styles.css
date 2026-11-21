@@ -765,3 +765,51 @@ html{scroll-padding-top:84px}
   .analyzer-ai-output { padding: 13px; font-size: 13px; }
   .analyzer-ai-panel { padding: 13px; }
 }
+
+
+/* VESTRA Advanced Fashion Studio — vector workspace upgrade */
+.fashion-view-controls{margin-inline-start:auto}
+.fashion-view-controls>span{min-width:42px;text-align:center;color:#dce6d5;font:10px 'DM Mono'}
+.fashion-view-controls button{min-width:34px;justify-content:center}
+.fashion-modular-toolbar{position:sticky;top:8px;z-index:8;box-shadow:0 8px 24px #0003;backdrop-filter:blur(14px)}
+.fashion-tool-group button{transition:background .18s ease,border-color .18s ease,color .18s ease}
+.fashion-tool-group button:hover{border-color:#9ebd65;color:#e8f5d2}
+.fashion-tool-group button.active{box-shadow:inset 0 0 0 1px #a7c66b,0 0 0 3px #a7c66b18}
+.fashion-canvas{position:relative;overflow:auto;background-color:#111713;background-image:radial-gradient(#ffffff16 .7px,transparent .7px);background-size:18px 18px}
+.fashion-canvas.grid-on{background-image:linear-gradient(#ffffff0b 1px,transparent 1px),linear-gradient(90deg,#ffffff0b 1px,transparent 1px),radial-gradient(#ffffff18 .8px,transparent .8px);background-size:24px 24px,24px 24px,24px 24px}
+.fashion-canvas svg{flex:0 0 auto;max-width:none;transition:width .15s ease}
+.fashion-layer-list button{transition:background .15s ease,border-color .15s ease}
+.fashion-layer-list button.active{box-shadow:inset -3px 0 #b8d77d}
+.fashion-properties input[type=range]{accent-color:#b5d37b}
+.fashion-properties input[type=text]{min-width:0;width:100%;border:1px solid #3b4939;border-radius:7px;background:#202820;color:#edf2e8;padding:9px;font:inherit}
+.fashion-properties input:focus{outline:1px solid #9ebd65}
+.fashion-canvas-footer>span{max-width:100%;line-height:1.7}
+@media(max-width:900px){
+ .fashion-modular-layout{grid-template-columns:minmax(0,1fr)}
+ .fashion-library-panel{order:2}
+ .fashion-canvas-panel{order:1}
+ .fashion-inspector{order:3}
+ .fashion-component-grid{max-height:320px;grid-template-columns:repeat(3,minmax(0,1fr))}
+ .fashion-canvas{min-height:440px}
+ .fashion-modular-toolbar{position:static}
+}
+@media(max-width:560px){
+ .fashion-tool-group{width:100%}
+ .fashion-tool-group button{flex:1;justify-content:center;min-width:0;padding:8px 6px;font-size:9px}
+ .fashion-view-controls{justify-content:flex-end}
+ .fashion-component-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .fashion-canvas{min-height:360px;padding:8px}
+ .fashion-canvas svg{max-height:none}
+ .fashion-bottom-actions>div{display:grid;grid-template-columns:1fr}
+}
+
+/* Accessible text insertion dialog for the fashion workspace */
+.fashion-text-modal-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;background:rgba(4,9,6,.72);backdrop-filter:blur(7px)}
+.fashion-text-modal{width:min(100%,430px);display:grid;gap:14px;padding:18px;border:1px solid #56634c;border-radius:14px;background:#182019;color:#edf2e8;box-shadow:0 24px 80px #0009}
+.fashion-text-modal>div{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fashion-text-modal>div strong{font-size:14px}
+.fashion-text-modal button{padding:8px 13px;border:1px solid #526347;border-radius:8px;background:#263323;color:#eaf3df;font:inherit;cursor:pointer}
+.fashion-text-modal button:disabled{opacity:.45;cursor:not-allowed}
+.fashion-text-modal textarea{width:100%;resize:vertical;min-height:84px;padding:11px;border:1px solid #526347;border-radius:9px;background:#101711;color:#fff;font:inherit;outline-color:#a7c66b}
+.fashion-text-modal>div:last-child{justify-content:flex-start}
+.fashion-text-modal>div:last-child button:last-child{background:#a7c66b;border-color:#a7c66b;color:#15200f;font-weight:700}
