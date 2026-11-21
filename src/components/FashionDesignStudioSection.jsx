@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
-import { Download, Save, Shirt, Scissors, Layers3, Undo2, Redo2, Trash2, Copy, Sparkles, Move, PenTool, ImagePlus, Plus, Eye, EyeOff, UploadCloud, X, LoaderCircle, Square, Circle, Type, Grid3X3, ZoomIn, ZoomOut, ChevronUp, ChevronDown, Lock, Unlock, MousePointer2 } from 'lucide-react'
+import { Download, Save, Shirt, Scissors, Layers3, Search, Undo2, Redo2, Trash2, Copy, Sparkles, Move, PenTool, ImagePlus, Plus, Eye, EyeOff, UploadCloud, X, LoaderCircle, Square, Circle, Type, Grid3X3, ZoomIn, ZoomOut, ChevronUp, ChevronDown, Lock, Unlock, MousePointer2 } from 'lucide-react'
 
 const CATALOG = {
  bodies:[
@@ -19,7 +19,14 @@ const CATALOG = {
   {id:'sleeve-long',name:'كم طويل',path:'M190 120 L165 218 L115 365 L145 382 L215 205 Z M310 120 L355 145 L385 365 L355 382 L285 205 Z'},
   {id:'sleeve-puff',name:'كم منفوش',path:'M190 120 Q140 125 125 195 Q125 235 170 232 L215 180 Z M310 120 Q360 125 375 195 Q375 235 330 232 L285 180 Z'},
   {id:'sleeve-bell',name:'كم جرس',path:'M190 120 L165 218 L105 390 L160 405 L215 205 Z M310 120 L355 145 L395 390 L340 405 L285 205 Z'},
-  {id:'sleeve-kimono',name:'كم كيمونو',path:'M190 120 L115 155 L80 260 L125 280 L215 205 Z M310 120 L385 155 L420 260 L375 280 L285 205 Z'}
+  {id:'sleeve-kimono',name:'كم كيمونو',path:'M190 120 L115 155 L80 260 L125 280 L215 205 Z M310 120 L385 155 L420 260 L375 280 L285 205 Z'},
+  {id:'sleeve-bishop',name:'كم أسقفي',path:'M190 120 Q155 125 145 195 L115 350 Q130 385 165 365 L215 205 Z M310 120 Q345 125 355 195 L385 350 Q370 385 335 365 L285 205 Z'},
+  {id:'sleeve-lantern',name:'كم فانوس',path:'M190 120 Q140 145 145 220 Q155 280 170 330 L145 360 L180 375 L215 205 Z M310 120 Q360 145 355 220 Q345 280 330 330 L355 360 L320 375 L285 205 Z'},
+  {id:'sleeve-cap',name:'كم كاب',path:'M190 120 Q150 115 130 170 L165 220 L215 180 Z M310 120 Q350 115 370 170 L335 220 L285 180 Z'},
+  {id:'sleeve-raglan',name:'كم راغلان',path:'M190 120 L165 145 L125 205 L160 230 L215 175 Z M310 120 L335 145 L375 205 L340 230 L285 175 Z'},
+  {id:'sleeve-flutter',name:'كم كشكشة',path:'M190 120 Q140 115 120 190 Q145 220 180 205 Q195 180 215 170 Z M310 120 Q360 115 380 190 Q355 220 320 205 Q305 180 285 170 Z'},
+  {id:'sleeve-offshoulder',name:'كم كتف ساقط',path:'M185 130 Q150 130 135 190 L165 225 L205 180 Z M315 130 Q350 130 365 190 L335 225 L295 180 Z'}
+
  ],
  cuffs:[
   {id:'cuff-straight',name:'أسورة مستقيمة',path:'M105 355 L150 365 L142 390 L105 380 Z M350 365 L395 355 L395 380 L358 390 Z'},
@@ -43,19 +50,54 @@ const CATALOG = {
   {id:'collar-shirt',name:'ياقة قميص',path:'M210 105 L250 145 L235 170 L200 118 Z M290 105 L250 145 L265 170 L300 118 Z'},
   {id:'collar-high',name:'ياقة عالية',path:'M215 95 L285 95 L280 145 Q250 160 220 145 Z'},
   {id:'collar-square',name:'ياقة مربعة',path:'M215 105 L215 150 L285 150 L285 105 L270 105 L270 135 L230 135 L230 105 Z'},
-  {id:'collar-bow',name:'ياقة فيونكة',path:'M250 135 L205 115 L220 155 L250 145 L280 155 L295 115 Z'}
+  {id:'collar-bow',name:'ياقة فيونكة',path:'M250 135 L205 115 L220 155 L250 145 L280 155 L295 115 Z'},
+  {id:'collar-peter-pan',name:'ياقة بيتر بان',path:'M250 135 Q220 110 195 115 Q205 155 245 160 Z M250 135 Q280 110 305 115 Q295 155 255 160 Z'},
+  {id:'collar-mandarin',name:'ياقة صينية',path:'M215 105 Q250 120 285 105 L280 145 Q250 160 220 145 Z'},
+  {id:'collar-lapel',name:'ياقة ريفير',path:'M205 105 L250 145 L230 205 L195 125 Z M295 105 L250 145 L270 205 L305 125 Z'},
+  {id:'collar-sailor',name:'ياقة بحّار',path:'M205 105 L250 140 L295 105 L320 175 L250 215 L180 175 Z'},
+  {id:'collar-shawl',name:'ياقة شال',path:'M205 105 Q215 155 250 180 Q285 155 295 105 L275 100 Q270 145 250 155 Q230 145 225 100 Z'},
+  {id:'collar-tie',name:'ياقة مع ربطة',path:'M215 105 L250 145 L285 105 L270 102 L250 130 L230 102 Z M250 145 L235 175 L250 215 L265 175 Z'}
+
  ],
  hems:[
   {id:'hem-straight',name:'حافة مستقيمة',path:'M180 425 Q250 440 320 425 L320 450 Q250 465 180 450 Z'},
   {id:'hem-rib',name:'حافة مضلعة',path:'M180 420 L320 420 L320 450 L180 450 Z'},
   {id:'hem-scallop',name:'حافة متموجة',path:'M180 430 Q195 450 210 430 Q225 450 240 430 Q255 450 270 430 Q285 450 300 430 Q310 445 320 430 L320 455 L180 455 Z'},
-  {id:'hem-asym',name:'حافة غير متماثلة',path:'M180 420 L320 420 L320 450 L250 470 L180 445 Z'}
+  {id:'hem-asym',name:'حافة غير متماثلة',path:'M180 420 L320 420 L320 450 L250 470 L180 445 Z'},
+  {id:'hem-curved',name:'حافة منحنية',path:'M165 420 Q250 475 335 420 L335 450 Q250 505 165 450 Z'},
+  {id:'hem-slit',name:'حافة بفتحة جانبية',path:'M180 420 L320 420 L320 450 L275 450 L275 410 L265 410 L265 450 L180 450 Z'},
+  {id:'hem-layered',name:'حافة بطبقتين',path:'M170 410 Q250 435 330 410 L330 430 Q250 455 170 430 Z M175 435 Q250 460 325 435 L325 455 Q250 480 175 455 Z'}
+
  ],
  pockets:[
   {id:'pocket-square',name:'جيب مربع',path:'M205 245 L245 245 L245 300 Q225 315 205 300 Z'},
   {id:'pocket-flap',name:'جيب بغطاء',path:'M205 245 L250 245 L250 292 L205 292 Z M200 238 L255 238 L250 258 L205 258 Z'},
   {id:'pocket-round',name:'جيب دائري',path:'M205 245 Q225 230 245 245 L245 295 Q225 310 205 295 Z'},
-  {id:'pocket-large',name:'جيب كبير',path:'M190 255 L250 255 L250 335 Q220 350 190 335 Z'}
+  {id:'pocket-large',name:'جيب كبير',path:'M190 255 L250 255 L250 335 Q220 350 190 335 Z'},
+  {id:'pocket-welt',name:'جيب بشق',path:'M190 265 L270 265 L270 280 L190 280 Z M195 265 L265 265',stroke:true},
+  {id:'pocket-cargo',name:'جيب كارغو',path:'M185 240 L265 240 L265 330 Q225 345 185 330 Z M180 255 L270 255 L265 280 L185 280 Z'},
+  {id:'pocket-kangaroo',name:'جيب كنغر',path:'M155 245 Q250 225 345 245 L330 330 Q250 355 170 330 Z M250 250 L250 340',stroke:true},
+  {id:'pocket-side',name:'جيب جانبي',path:'M180 230 Q220 245 235 285 L215 300 Q195 265 170 255 Z'},
+  {id:'pocket-patch',name:'جيب رقعة بغطاء',path:'M190 250 L270 250 L270 325 Q230 345 190 325 Z M185 240 L275 240 L270 265 L190 265 Z'}
+
+ ],
+ waistbands:[
+  {id:'waistband-elastic',name:'حزام وسط مطاطي',path:'M155 270 Q250 290 345 270 L340 310 Q250 330 160 310 Z'},
+  {id:'waistband-wide',name:'حزام عريض',path:'M170 255 L330 255 L330 325 L170 325 Z'},
+  {id:'waistband-paperbag',name:'حزام Paperbag',path:'M165 250 Q250 270 335 250 L330 335 Q250 350 170 335 Z M175 265 L325 265 M175 280 L325 280'},
+  {id:'waistband-belted',name:'حزام برباط',path:'M170 270 L330 270 L330 310 L170 310 Z M250 290 Q285 310 315 345 M250 290 Q215 310 185 345'}
+ ],
+ straps:[
+  {id:'strap-thin',name:'حمالات رفيعة',path:'M195 110 L210 110 L235 205 L220 205 Z M290 110 L305 110 L280 205 L265 205 Z'},
+  {id:'strap-wide',name:'حمالات عريضة',path:'M185 105 L215 105 L238 205 L210 205 Z M285 105 L315 105 L290 205 L262 205 Z'},
+  {id:'strap-cross',name:'حمالات متقاطعة',path:'M190 105 L210 105 L305 230 L285 230 Z M290 105 L310 105 L215 230 L195 230 Z'},
+  {id:'strap-bow',name:'رباط فيونكة',path:'M250 205 L205 180 L215 225 L250 215 L285 225 L295 180 Z M250 215 L235 265 L265 265 Z'}
+ ],
+ trims:[
+  {id:'trim-lace',name:'شريط دانتيل',path:'M150 250 Q160 235 170 250 Q180 235 190 250 Q200 235 210 250 Q220 235 230 250 Q240 235 250 250 Q260 235 270 250 Q280 235 290 250 Q300 235 310 250 Q320 235 330 250 L330 270 Q320 255 310 270 Q300 255 290 270 Q280 255 270 270 Q260 255 250 270 Q240 255 230 270 Q220 255 210 270 Q200 255 190 270 Q180 255 170 270 Q160 255 150 270 Z'},
+  {id:'trim-piping',name:'شريط بايبينج',path:'M180 160 Q250 190 320 160 M180 170 Q250 200 320 170',stroke:true},
+  {id:'trim-fringe',name:'شرّابات',path:'M160 250 L340 250 M170 250 L170 285 M190 250 L190 280 M210 250 L210 285 M230 250 L230 280 M250 250 L250 285 M270 250 L270 280 M290 250 L290 285 M310 250 L310 280 M330 250 L330 285',stroke:true},
+  {id:'trim-ruffle',name:'كشكشة',path:'M160 250 Q175 230 190 250 Q205 230 220 250 Q235 230 250 250 Q265 230 280 250 Q295 230 310 250 Q325 230 340 250',stroke:true}
  ],
  details:[
   {id:'zipper',name:'سوستة',path:'M250 145 L250 420 M244 155 L256 155 M244 175 L256 175 M244 195 L256 195 M244 215 L256 215 M244 235 L256 235 M244 255 L256 255 M244 275 L256 275 M244 295 L256 295 M244 315 L256 315 M244 335 L256 335 M244 355 L256 355 M244 375 L256 375 M244 395 L256 395',stroke:true},
@@ -87,7 +129,7 @@ const buildDesignSvg=(layers,pattern)=>{
 }
 const blobToDataUrl=blob=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob)})
 const inlineDesignTextures=async(svg,layers)=>{let result=svg;for(const layer of flattenLayers(layers)){const href=layer.textureUrl||layer.texturePreview;if(!href)continue;try{const response=await fetch(href);if(!response.ok)continue;const data=await blobToDataUrl(await response.blob());result=result.split(href).join(data)}catch(error){console.warn('Texture embedding failed:',error)}}return result}
-const categories=[{id:'bodies',label:'الأجسام',icon:Shirt},{id:'sleeves',label:'الأكمام',icon:Scissors},{id:'cuffs',label:'الأساور',icon:Scissors},{id:'hoods',label:'الكابيشو',icon:Shirt},{id:'closures',label:'الإغلاقات',icon:Layers3},{id:'collars',label:'الياقات',icon:Layers3},{id:'hems',label:'الحواف',icon:Layers3},{id:'pockets',label:'الجيوب',icon:Plus},{id:'details',label:'التفاصيل',icon:Sparkles},{id:'graphics',label:'الزخارف',icon:PenTool}]
+const categories=[{id:'bodies',label:'الأجسام',icon:Shirt},{id:'sleeves',label:'الأكمام',icon:Scissors},{id:'cuffs',label:'الأساور',icon:Scissors},{id:'waistbands',label:'أحزمة الوسط',icon:Layers3},{id:'straps',label:'الحمالات',icon:Layers3},{id:'trims',label:'الزخارف والحليات',icon:Sparkles},{id:'hoods',label:'الكابيشو',icon:Shirt},{id:'closures',label:'الإغلاقات',icon:Layers3},{id:'collars',label:'الياقات',icon:Layers3},{id:'hems',label:'الحواف',icon:Layers3},{id:'pockets',label:'الجيوب',icon:Plus},{id:'details',label:'التفاصيل',icon:Sparkles},{id:'graphics',label:'الزخارف',icon:PenTool}]
 const uid=()=> 'layer-'+Date.now()+'-'+Math.random().toString(36).slice(2,7)
 const makeShapePath=(kind,a,b)=>{const left=Math.min(a.x,b.x),top=Math.min(a.y,b.y),width=Math.max(2,Math.abs(b.x-a.x)),height=Math.max(2,Math.abs(b.y-a.y));return kind==='rect'?'M '+left+' '+top+' H '+(left+width)+' V '+(top+height)+' H '+left+' Z':'M '+(left+width/2)+' '+top+' A '+(width/2)+' '+(height/2)+' 0 1 1 '+(left+width/2-0.01)+' '+top+' Z'}
 const buildPenPath=points=>{if(!points.length)return '';if(points.length===1)return 'M '+points[0].x+' '+points[0].y;if(points.length===2)return 'M '+points[0].x+' '+points[0].y+' L '+points[1].x+' '+points[1].y;let d='M '+points[0].x+' '+points[0].y;for(let i=0;i<points.length-1;i++){const p0=points[Math.max(0,i-1)],p1=points[i],p2=points[i+1],p3=points[Math.min(points.length-1,i+2)];const c1={x:p1.x+(p2.x-p0.x)/6,y:p1.y+(p2.y-p0.y)/6},c2={x:p2.x-(p3.x-p1.x)/6,y:p2.y-(p3.y-p1.y)/6};d+=' C '+c1.x+' '+c1.y+' '+c2.x+' '+c2.y+' '+p2.x+' '+p2.y}return d}
@@ -99,6 +141,7 @@ export default function FashionDesignStudioSection({user,onNotice,onTryOn}){
  const [selectedIds,setSelectedIds]=useState(()=>layers[0]?[layers[0].id]:[])
  const [multiSelectMode,setMultiSelectMode]=useState(false)
   const [category,setCategory]=useState('bodies')
+ const [catalogSearch,setCatalogSearch]=useState('')
  const [tool,setTool]=useState('select')
  const [color,setColor]=useState('#d6f36a')
  const [zoom,setZoom]=useState(100)
@@ -204,7 +247,7 @@ export default function FashionDesignStudioSection({user,onNotice,onTryOn}){
   
   <div className="fashion-presets"><strong>بدايات جاهزة (اختيارية)</strong><button onClick={()=>applyPreset('tee',['sleeve-short','collar-round','pocket-square'])}>تيشيرت يومي</button><button onClick={()=>applyPreset('jacket',['sleeve-long','collar-shirt','zipper','pocket-flap'])}>جاكيت عملي</button><button onClick={()=>applyPreset('dress',['sleeve-puff','collar-v','belt','hem-scallop'])}>فستان إبداعي</button><button onClick={()=>applyPreset('hoodie',['sleeve-long','collar-high','pocket-large'])}>هودي واسع</button></div>
   <div className={'fashion-modular-layout '+(showLayers?'':'hide-layers')}>
-   <aside className="fashion-library-panel"><div className="fashion-library-heading"><span>COMPONENT LIBRARY</span><strong>مكتبة المكونات</strong><small>اختر أي جزء لإضافته إلى مساحة العمل</small><input ref={svgInput} type="file" accept=".svg,image/svg+xml" className="visually-hidden" onChange={importSvgFile}/><button type="button" className="fashion-import-svg" onClick={()=>svgInput.current?.click()}><ImagePlus size={14}/> استيراد مكوّن SVG</button></div><div className="fashion-category-tabs">{categories.map(item=><button key={item.id} className={category===item.id?'active':''} onClick={()=>setCategory(item.id)}><item.icon size={14}/>{item.label}</button>)}</div><div className="fashion-component-grid">{(CATALOG[category]||[]).map(item=><button key={item.id} onClick={()=>addPart(item)}><span className="fashion-component-thumb"><svg viewBox="100 70 300 430"><path d={item.path} fill={item.stroke?'none':color} stroke="#dbe4d2" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/></svg></span><strong>{item.name}</strong><small>إضافة للمساحة <Plus size={11}/></small></button>)}</div><div className="fashion-library-tip"><Sparkles size={15}/> يمكنك إضافة أكثر من كم أو جيب، وتغيير كل واحد بشكل مستقل.</div></aside>
+   <aside className="fashion-library-panel"><div className="fashion-library-heading"><span>COMPONENT LIBRARY</span><strong>مكتبة المكونات</strong><small>اختر أي جزء لإضافته إلى مساحة العمل</small><input ref={svgInput} type="file" accept=".svg,image/svg+xml" className="visually-hidden" onChange={importSvgFile}/><button type="button" className="fashion-import-svg" onClick={()=>svgInput.current?.click()}><ImagePlus size={14}/> استيراد مكوّن SVG</button></div><div className="fashion-category-tabs">{categories.map(item=><button key={item.id} className={category===item.id?'active':''} onClick={()=>setCategory(item.id)}><item.icon size={14}/>{item.label}</button>)}</div><label className="fashion-catalog-search"><Search size={14}/><input value={catalogSearch} onChange={e=>setCatalogSearch(e.target.value)} placeholder="ابحث عن كم، ياقة، جيب..."/><span>{(CATALOG[category]||[]).filter(item=>item.name.includes(catalogSearch)||item.id.includes(catalogSearch.toLowerCase())).length} عنصر</span></label><div className="fashion-component-grid">{(CATALOG[category]||[]).filter(item=>item.name.includes(catalogSearch)||item.id.includes(catalogSearch.toLowerCase())).map(item=><button key={item.id} onClick={()=>addPart(item)}><span className="fashion-component-thumb"><svg viewBox="100 70 300 430"><path d={item.path} fill={item.stroke?'none':color} stroke="#dbe4d2" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/></svg></span><strong>{item.name}</strong><small>إضافة للمساحة <Plus size={11}/></small></button>)}</div>{!(CATALOG[category]||[]).some(item=>item.name.includes(catalogSearch)||item.id.includes(catalogSearch.toLowerCase()))&&<div className="fashion-catalog-empty">لا توجد مكونات مطابقة للبحث في هذا القسم.</div>}<div className="fashion-library-tip"><Sparkles size={15}/> كل المكونات Vector أصلية، ويمكن تلوينها وتكبيرها وتحريكها ودمجها مع طبقات أخرى.</div></aside>
    <div className="fashion-canvas-panel">
 <div className="fashion-tool-dock" aria-label="قوائم أدوات التصميم">
   <div className="fashion-tool-dock-list">
