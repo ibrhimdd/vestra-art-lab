@@ -953,3 +953,17 @@ html{scroll-padding-top:84px}
 @media(max-width:700px){.fashion-layer-bulk-actions button{flex:1 1 auto;min-height:34px;font-size:9px}.fashion-import-svg{min-height:40px;font-size:11px}}
 
 .fashion-layer-bulk-actions button.active{border-color:#a7c66b;background:#2b3624;color:#f0f7e7}
+
+
+/* Expanded VESTRA vector component library */
+.fashion-catalog-search{display:flex;align-items:center;gap:9px;margin:12px 0;padding:10px 12px;border:1px solid #46543e;border-radius:9px;background:#1d261d;color:#a9b99d}
+.fashion-catalog-search:focus-within{border-color:#a7c66b;box-shadow:0 0 0 2px rgba(167,198,107,.12)}
+.fashion-catalog-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#eef4e8;font-size:11px}
+.fashion-catalog-search input::placeholder{color:#788674}
+.fashion-catalog-search span{flex:none;color:#91a27f;font-size:9px;white-space:nowrap}
+.fashion-catalog-empty{padding:24px 12px;text-align:center;color:#9aa894;font-size:11px;border:1px dashed #46543e;border-radius:9px}
+.fashion-component-grid{align-content:start}
+.fashion-component-grid>button{min-width:0;transition:transform .18s ease,border-color .18s ease,background .18s ease}
+.fashion-component-grid>button:hover{transform:translateY(-2px);border-color:#a7c66b;background:#293529}
+.fashion-category-tabs{scrollbar-width:thin;scrollbar-color:#71865d transparent}
+@media(max-width:700px){.fashion-catalog-search{position:sticky;top:0;z-index:3}.fashion-catalog-search input{font-size:12px}.fashion-component-grid>button{min-height:112px}}
