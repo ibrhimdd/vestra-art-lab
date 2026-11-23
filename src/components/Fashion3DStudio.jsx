@@ -225,7 +225,7 @@ function PatternPanel({ piece, side, color, roughness, fitScale, drape, showDart
   const meshRef=useRef(null)
   const seamRatio=clamp((Number(piece.measurements?.seam)||1.5)/Math.max(20,Math.min(piece.width,piece.height)),0.015,0.075)
   const geometry=useMemo(()=>createPatternGeometry(piece,side,fitScale),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,fitScale,side])
-  const solver=useMemo(()=>createClothSolver(geometry,piece.kind,piece.measurements,fitScale),[geometry,piece.kind,piece.measurements,fitScale])
+  const solver=useMemo(()=>createClothSolver(geometry,piece.kind,piece.measurements,fitScale,side),[geometry,piece.kind,piece.measurements,fitScale])
   const cutLine=useMemo(()=>createPathLine(piece.path,piece,side,fitScale,1),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,fitScale,side])
   const stitchLine=useMemo(()=>createPathLine(piece.path,piece,side,fitScale,1-seamRatio),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,piece.measurements?.seam,fitScale,side,seamRatio])
   const allowanceLine=useMemo(()=>createPathLine(piece.path,piece,side,fitScale,1+seamRatio),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,piece.measurements?.seam,fitScale,side,seamRatio])
