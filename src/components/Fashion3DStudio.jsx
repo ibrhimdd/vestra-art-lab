@@ -28,7 +28,7 @@ function Mannequin({ garment, color, roughness, showBody, showBaseGarment, measu
         <cylinderGeometry args={[bustRadius, waistRadius, 1.05, 48, 2]} />
         <meshStandardMaterial color={skin} roughness={0.82} />
       </mesh>}
-      <mesh position={[0, 0.75, 0]} castShadow><cylinderGeometry args={[hipRadius, waistRadius, 0.36, 36]} /><meshStandardMaterial color={skin} roughness={0.82} /></mesh>
+      <mesh position={[0, 0.75, 0]} castShadow><cylinderGeometry args={[waistRadius, hipRadius, 0.36, 36]} /><meshStandardMaterial color={skin} roughness={0.82} /></mesh>
       <mesh position={[-0.16, 0.13, 0]} castShadow><capsuleGeometry args={[0.105, 0.82, 8, 16]} /><meshStandardMaterial color={skin} roughness={0.82} /></mesh>
       <mesh position={[0.16, 0.13, 0]} castShadow><capsuleGeometry args={[0.105, 0.82, 8, 16]} /><meshStandardMaterial color={skin} roughness={0.82} /></mesh>
       <mesh position={[-0.49, 1.35, 0]} rotation={[0, 0, -0.12]} castShadow><capsuleGeometry args={[0.09, 0.86, 8, 16]} /><meshStandardMaterial color={skin} roughness={0.82} /></mesh>
@@ -156,31 +156,33 @@ function createPathLine(pathData, piece, side, fitScale, inset = 1) {
   try {
     const width=Math.max(1,Number(piece.width)||1),height=Math.max(1,Number(piece.height)||1)
     const parsed=new SVGLoader().parse('<svg xmlns="http://www.w3.org/2000/svg" width="'+width+'" height="'+height+'" viewBox="0 0 '+width+' '+height+'"><path d="'+pathData.replace(/"/g,'&quot;')+'" fill="none" stroke="#000"/></svg>')
-    const points=[]
+    const subPaths=parsed.paths.flatMap(path=>path.subPaths.map(subPath=>subPath.getPoints(48))).filter(points=>points.length>1)
+    const allPoints=subPaths.flat()
+    if(!allPoints.length)return null
+    const minX=Math.min(...allPoints.map(point=>point.x)),maxX=Math.max(...allPoints.map(point=>point.x))
+    const minY=Math.min(...allPoints.map(point=>point.y)),maxY=Math.max(...allPoints.map(point=>point.y))
+    const spanX=Math.max(0.001,maxX-minX),spanY=Math.max(0.001,maxY-minY)
     const projection=createProjection(piece,side,fitScale)
-    for(const path of parsed.paths) for(const subPath of path.subPaths){
-      const samples=subPath.getPoints(48)
-      for(let i=0;i<samples.length;i+=1){
-        const p=samples[i]
-        const nx=clamp(0.5+(p.x/width-0.5)*inset,0,1)
-        const ny=clamp((p.y<=0?(height+p.y)/height:p.y/height),0,1)
-        const xyz=projection(nx,ny,0.006)
-        points.push(xyz)
+    const vertices=[],distances=[]
+    let travelled=0
+    for(const samples of subPaths){
+      const mapped=samples.map(point=>{
+        const rawX=clamp((point.x-minX)/spanX,0,1)
+        const rawY=clamp(maxY<=0?(maxY-point.y)/spanY:(point.y-minY)/spanY,0,1)
+        const nx=clamp(0.5+(rawX-0.5)*inset,0,1)
+        const ny=clamp(0.5+(rawY-0.5)*inset,0,1)
+        return projection(nx,ny,0.006)
+      })
+      for(let i=1;i<mapped.length;i++){
+        const a=mapped[i-1],b=mapped[i]
+        vertices.push(...a,...b)
+        const dx=b[0]-a[0],dy=b[1]-a[1],dz=b[2]-a[2]
+        const segment=Math.sqrt(dx*dx+dy*dy+dz*dz)
+        distances.push(travelled,travelled+segment)
+        travelled+=segment
       }
     }
-    const vertices=[]
-    for(let i=0;i<points.length;i+=1){
-      if(i>0){vertices.push(...points[i-1],...points[i])}
-    }
     if(!vertices.length)return null
-    const distances=[]
-    let travelled=0
-    for(let i=0;i<vertices.length;i+=6){
-      const dx=vertices[i+3]-vertices[i],dy=vertices[i+4]-vertices[i+1],dz=vertices[i+5]-vertices[i+2]
-      const segment=Math.sqrt(dx*dx+dy*dy+dz*dz)
-      distances.push(travelled,travelled+segment)
-      travelled+=segment
-    }
     const geometry=new BufferGeometry()
     geometry.setAttribute('position',new Float32BufferAttribute(vertices,3))
     geometry.setAttribute('lineDistance',new Float32BufferAttribute(distances,1))
@@ -191,7 +193,6 @@ function createPathLine(pathData, piece, side, fitScale, inset = 1) {
     return null
   }
 }
-
 function PatternLine({ geometry, color, dashed = false, width = 1 }) {
   useEffect(()=>()=>geometry?.dispose(),[geometry])
   if(!geometry)return null
