@@ -6,7 +6,7 @@ const distance3 = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
  * It welds duplicated non-indexed triangle vertices by their pattern UVs,
  * then solves structural, shear and two-hop bending constraints.
  */
-export function createClothSolver(geometry, kind = 'bodice', measurements = {}, fitScale = 1) {
+export function createClothSolver(geometry, kind = 'bodice', measurements = {}, fitScale = 1, side = 1) {
   if (!geometry?.attributes?.position || !geometry?.attributes?.aPatternUv) return null
 
   const source = geometry.attributes.position
@@ -64,11 +64,13 @@ export function createClothSolver(geometry, kind = 'bodice', measurements = {}, 
   }
 
   // Two-hop constraints resist unrealistic sharp folding without making the cloth rigid.
+  // Iterate over a frozen structural graph so added bend links cannot expand this traversal.
+  const structuralAdjacency = adjacency.map(neighbors => [...neighbors])
   const bendPairs = new Set()
-  for (let a = 0; a < adjacency.length; a += 1) {
-    for (const middle of adjacency[a]) {
-      for (const b of adjacency[middle]) {
-        if (a === b || adjacency[a].has(b)) continue
+  for (let a = 0; a < structuralAdjacency.length; a += 1) {
+    for (const middle of structuralAdjacency[a]) {
+      for (const b of structuralAdjacency[middle]) {
+        if (a === b || structuralAdjacency[a].includes(b)) continue
         const low = Math.min(a, b)
         const high = Math.max(a, b)
         const key = `${low}:${high}`
@@ -87,24 +89,45 @@ export function createClothSolver(geometry, kind = 'bodice', measurements = {}, 
   let disposed = false
 
   const collideWithBody = node => {
-    if (kind !== 'bodice' && kind !== 'skirt') return
     const v = node.uv[1]
-    let bodyRadius
-    if (kind === 'bodice') {
-      bodyRadius = v < 0.45
-        ? bustRadius * (0.88 + 0.12 * (v / 0.45))
-        : bustRadius + (waistRadius - bustRadius) * ((v - 0.45) / 0.55)
-    } else {
-      bodyRadius = waistRadius + (hipRadius - waistRadius) * Math.min(1, v * 1.5) + v * 0.13 * fitScale
-    }
     const x = node.position[0]
+    const y = node.position[1]
     const z = node.position[2]
-    const radial = Math.hypot(x, z)
-    const minimum = bodyRadius + 0.018
-    if (radial > 0.0001 && radial < minimum) {
-      const scale = minimum / radial
-      node.position[0] *= scale
-      node.position[2] *= scale
+
+    if (kind === 'bodice' || kind === 'skirt') {
+      const bodyRadius = kind === 'bodice'
+        ? (v < 0.45
+          ? bustRadius * (0.88 + 0.12 * (v / 0.45))
+          : bustRadius + (waistRadius - bustRadius) * ((v - 0.45) / 0.55))
+        : waistRadius + (hipRadius - waistRadius) * Math.min(1, v * 1.5) + v * 0.13 * fitScale
+      const radial = Math.hypot(x, z)
+      const minimum = bodyRadius + 0.018
+      if (radial > 0.0001 && radial < minimum) {
+        const scale = minimum / radial
+        node.position[0] *= scale
+        node.position[2] *= scale
+      }
+    } else if (kind === 'sleeve') {
+      const armX = side * (0.31 + v * 0.38) * fitScale
+      const armY = (1.9 - v * 0.86) * fitScale + (1 - fitScale) * 1.2
+      const radial = Math.hypot(y - armY, z - 0.09)
+      const minimum = 0.125
+      if (radial > 0.0001 && radial < minimum) {
+        const scale = minimum / radial
+        node.position[1] = armY + (y - armY) * scale
+        node.position[2] = 0.09 + (z - 0.09) * scale
+      }
+      // Keep the sleeve outside the upper arm instead of letting it tunnel through.
+      if (Math.abs(x - armX) < 0.025) node.position[0] += side * 0.025
+    } else if (kind === 'trouser' || kind === 'trousers') {
+      const legX = side * 0.16 * fitScale
+      const radial = Math.hypot(x - legX, z)
+      const minimum = 0.125
+      if (radial > 0.0001 && radial < minimum) {
+        const scale = minimum / radial
+        node.position[0] = legX + (x - legX) * scale
+        node.position[2] = z * scale
+      }
     }
   }
 
