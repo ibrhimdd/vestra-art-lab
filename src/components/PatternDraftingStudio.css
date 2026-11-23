@@ -23,3 +23,12 @@
 .vestra-pattern-heading-actions button:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(.5)}
 .vestra-pattern-footer>span{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 @media(max-width:560px){.vestra-pattern-handle-hit{stroke-width:.8}}
+
+
+/* Bézier curve handles: distinct from measurement handles */
+.vestra-pattern-handle.bezier .vestra-pattern-handle-hit{fill:#fff0df;stroke:#b85f35;stroke-width:.7;cursor:crosshair}
+.vestra-pattern-handle.bezier .vestra-pattern-handle-hit:active{fill:#ffc89f;stroke:#8e3e20;stroke-width:1.1}
+.vestra-pattern-handle.bezier .vestra-pattern-handle-label{fill:#7b351d;stroke:#fff5eb;opacity:0}
+.vestra-pattern-handle.bezier:hover .vestra-pattern-handle-label,.vestra-pattern-handle.bezier:focus-within .vestra-pattern-handle-label{opacity:1}
+.vestra-pattern-curve-help{display:grid;gap:4px;margin-top:11px;padding:10px;border:1px solid #754b36;border-radius:8px;background:#30251f;color:#f0c6aa;font-size:10px;line-height:1.7}
+.vestra-pattern-curve-help span{color:#d5b7a3}
