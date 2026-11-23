@@ -22,3 +22,13 @@
 .fashion-3d-controls .fashion-3d-range{min-width:0}
 @media(max-width:850px){.fashion-3d-pattern-control,.fashion-3d-detail-controls,.fashion-3d-drape-control{grid-column:1/-1}}
 @media(max-width:520px){.fashion-3d-pattern-control,.fashion-3d-detail-controls,.fashion-3d-drape-control{grid-column:auto}.fashion-3d-drape-badge{top:48px;right:8px}}
+
+/* Physical cloth simulation controls */
+.fashion-3d-fabric-presets{display:grid;gap:8px}
+.fashion-3d-fabric-presets>span{font-size:11px;color:#687568;font-weight:700}
+.fashion-3d-fabric-presets>div{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.fashion-3d-fabric-presets button{min-height:34px;padding:6px 3px;border:1px solid #dfe5d9;border-radius:8px;background:#fff;color:#65705f;font:inherit;font-size:11px;cursor:pointer;transition:background .18s,border-color .18s,color .18s}
+.fashion-3d-fabric-presets button.active{border-color:#78936d;background:#eaf2e5;color:#3e5c3d;font-weight:800}
+.fashion-3d-drape-control .fashion-3d-range{margin-top:3px}
+.fashion-3d-drape-control small{display:block;line-height:1.8}
+@media(max-width:520px){.fashion-3d-fabric-presets>div{grid-template-columns:repeat(5,minmax(0,1fr))}.fashion-3d-fabric-presets button{font-size:10px}}

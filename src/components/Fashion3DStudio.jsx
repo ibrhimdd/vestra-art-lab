@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { ContactShadows, OrbitControls } from '@react-three/drei'
 import { BufferGeometry, DoubleSide, Float32BufferAttribute, ShapeGeometry, Vector2 } from 'three'
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
+import { createClothSolver } from './clothPhysicsSolver'
 import './Fashion3DStudio.css'
 
 const garmentOptions = [
@@ -12,6 +13,14 @@ const garmentOptions = [
 ]
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
 const lerp = (a, b, t) => a + (b - a) * t
+
+const fabricPresets = [
+  { id: 'cotton', label: 'قطن', gravity: 1, damping: 0.988, stiffness: 0.86 },
+  { id: 'silk', label: 'حرير', gravity: 0.72, damping: 0.982, stiffness: 0.66 },
+  { id: 'denim', label: 'جينز', gravity: 1.22, damping: 0.994, stiffness: 0.97 },
+  { id: 'satin', label: 'ساتان', gravity: 0.84, damping: 0.985, stiffness: 0.76 },
+  { id: 'chiffon', label: 'شيفون', gravity: 0.56, damping: 0.976, stiffness: 0.48 }
+]
 
 function Mannequin({ garment, color, roughness, showBody, showBaseGarment, measurements }) {
   const fabric = useMemo(() => ({ color, roughness, metalness: 0.02 }), [color, roughness])
@@ -212,35 +221,20 @@ function PatternLine({ geometry, color, dashed = false, width = 1 }) {
   </line>
 }
 
-function PatternPanel({ piece, side, color, roughness, fitScale, drape, showDarts, showStitches, showAllowance }) {
+function PatternPanel({ piece, side, color, roughness, fitScale, drape, showDarts, showStitches, showAllowance, fabricPreset, windStrength }) {
   const meshRef=useRef(null)
-  const frameRef=useRef(0)
   const seamRatio=clamp((Number(piece.measurements?.seam)||1.5)/Math.max(20,Math.min(piece.width,piece.height)),0.015,0.075)
   const geometry=useMemo(()=>createPatternGeometry(piece,side,fitScale),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,fitScale,side])
+  const solver=useMemo(()=>createClothSolver(geometry,piece.kind,piece.measurements,fitScale,side),[geometry,piece.kind,piece.measurements,fitScale])
   const cutLine=useMemo(()=>createPathLine(piece.path,piece,side,fitScale,1),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,fitScale,side])
   const stitchLine=useMemo(()=>createPathLine(piece.path,piece,side,fitScale,1-seamRatio),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,piece.measurements?.seam,fitScale,side,seamRatio])
   const allowanceLine=useMemo(()=>createPathLine(piece.path,piece,side,fitScale,1+seamRatio),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,piece.measurements?.seam,fitScale,side,seamRatio])
   const dartLines=useMemo(()=>showDarts?(piece.darts||[]).map(dart=>createPathLine(dart.d,piece,side,fitScale,1)):[],[piece.darts,piece.kind,piece.width,piece.height,piece.pieceId,fitScale,side,showDarts])
-  useEffect(()=>()=>{geometry?.dispose();cutLine?.dispose();stitchLine?.dispose();allowanceLine?.dispose();dartLines.forEach(line=>line?.dispose())},[geometry,cutLine,stitchLine,allowanceLine,dartLines])
-  useFrame(({clock})=>{
-    if(!meshRef.current||!geometry?.userData.basePositions)return
-    const position=geometry.attributes.position
-    const base=geometry.userData.basePositions
-    const uv=geometry.attributes.aPatternUv
-    const time=clock.elapsedTime
-    const intensity=drape?1:0
-    for(let i=0;i<position.count;i+=1){
-      const nx=uv.getX(i),ny=uv.getY(i),offset=i*3
-      const bx=base[offset],by=base[offset+1],bz=base[offset+2]
-      const wave=(Math.sin(nx*19+time*1.5)+Math.sin(nx*31-time*1.1)*0.45)*0.0035*intensity
-      const sway=Math.sin(time*1.2+nx*8)*ny*ny*0.012*intensity
-      const fold=wave*Math.sin(ny*Math.PI*0.9)+sway
-      const radius=Math.max(0.001,Math.hypot(bx,bz))
-      position.setXYZ(i,bx+(bx/radius)*fold,by-Math.abs(sway)*0.35,bz+(bz/radius)*fold)
-    }
-    position.needsUpdate=true
-    frameRef.current+=1
-    if(frameRef.current%3===0)geometry.computeVertexNormals()
+  useEffect(()=>()=>{solver?.dispose();geometry?.dispose();cutLine?.dispose();stitchLine?.dispose();allowanceLine?.dispose();dartLines.forEach(line=>line?.dispose())},[solver,geometry,cutLine,stitchLine,allowanceLine,dartLines])
+  useEffect(()=>{if(!drape)solver?.reset()},[drape,solver])
+  useFrame(({clock},delta)=>{
+    if(!meshRef.current||!solver||!drape)return
+    solver.step(delta,clock.elapsedTime,{gravity:fabricPreset.gravity,damping:fabricPreset.damping,stiffness:fabricPreset.stiffness,wind:windStrength})
   })
   if(!geometry)return null
   return <group>
@@ -254,18 +248,18 @@ function PatternPanel({ piece, side, color, roughness, fitScale, drape, showDart
   </group>
 }
 
-function PatternGarment({ pieces, color, roughness, fitScale, drape, showDarts, showStitches, showAllowance }) {
+function PatternGarment({ pieces, color, roughness, fitScale, drape, showDarts, showStitches, showAllowance, fabricPreset, windStrength }) {
   if(!pieces?.length)return null
   return <group>{pieces.map(piece=>{
     const id=piece.pieceId||piece.id||''
     const sides=piece.kind==='sleeve'||piece.kind==='trouser'||piece.kind==='bodice'||piece.kind==='skirt'?[-1,1]:[1]
-    return sides.map(side=><PatternPanel key={id+'-'+side} piece={piece} side={side} color={color} roughness={roughness} fitScale={fitScale} drape={drape} showDarts={showDarts} showStitches={showStitches} showAllowance={showAllowance}/>)
+    return sides.map(side=><PatternPanel key={id+'-'+side} piece={piece} side={side} color={color} roughness={roughness} fitScale={fitScale} drape={drape} showDarts={showDarts} showStitches={showStitches} showAllowance={showAllowance} fabricPreset={fabricPreset} windStrength={windStrength}/>)
   })}</group>
 }
 
 function CameraAim(){const {camera}=useThree();useEffect(()=>{camera.position.set(4.2,3.1,7);camera.lookAt(0,1.2,0);camera.updateProjectionMatrix()},[camera]);return null}
 
-function Scene({garment,color,roughness,showBody,patternPieces,showPatternPieces,fitScale,drape,showDarts,showStitches,showAllowance}){
+function Scene({garment,color,roughness,showBody,patternPieces,showPatternPieces,fitScale,drape,showDarts,showStitches,showAllowance,fabricPreset,windStrength}){
   const usePattern=showPatternPieces&&patternPieces.length>0
   const measurements=patternPieces[0]?.measurements
   return <Canvas shadows dpr={[1,1.5]} camera={{position:[4.2,3.1,7],fov:38,near:0.1,far:100}} gl={{antialias:true,alpha:false}} onCreated={({gl})=>gl.setClearColor('#f3f0e9',1)}>
@@ -273,7 +267,7 @@ function Scene({garment,color,roughness,showBody,patternPieces,showPatternPieces
     <ambientLight intensity={1.15}/><hemisphereLight args={['#ffffff','#b9aa98',1.1]}/>
     <directionalLight position={[4,7,6]} intensity={2.4} castShadow shadow-mapSize={[1024,1024]}/><directionalLight position={[-4,3,-3]} intensity={0.8}/>
     <Mannequin garment={garment} color={color} roughness={roughness} showBody={showBody} showBaseGarment={!usePattern} measurements={measurements}/>
-    {usePattern&&<PatternGarment pieces={patternPieces} color={color} roughness={roughness} fitScale={fitScale} drape={drape} showDarts={showDarts} showStitches={showStitches} showAllowance={showAllowance}/>}
+    {usePattern&&<PatternGarment pieces={patternPieces} color={color} roughness={roughness} fitScale={fitScale} drape={drape} showDarts={showDarts} showStitches={showStitches} showAllowance={showAllowance} fabricPreset={fabricPreset} windStrength={windStrength}/>}
     <mesh rotation={[-Math.PI/2,0,0]} position={[0,-0.535,0]} receiveShadow><planeGeometry args={[20,20]}/><meshStandardMaterial color="#e8e2d8" roughness={0.95}/></mesh>
     <ContactShadows position={[0,-0.52,0]} opacity={0.28} scale={5} blur={2.5} far={2}/>
     <OrbitControls makeDefault enablePan={false} minDistance={3.2} maxDistance={9} minPolarAngle={0.35} maxPolarAngle={Math.PI/1.8} target={[0,1.2,0]}/>
@@ -290,6 +284,9 @@ export default function Fashion3DStudio({layers=[],designName=''}){
   const [showPatternPieces,setShowPatternPieces]=useState(true)
   const [fitScale,setFitScale]=useState(1)
   const [drape,setDrape]=useState(false)
+  const [fabricType,setFabricType]=useState('cotton')
+  const [windStrength,setWindStrength]=useState(0.18)
+  const fabricPreset=fabricPresets.find(preset=>preset.id===fabricType)||fabricPresets[0]
   const [showDarts,setShowDarts]=useState(true)
   const [showStitches,setShowStitches]=useState(true)
   const [showAllowance,setShowAllowance]=useState(false)
@@ -299,10 +296,10 @@ export default function Fashion3DStudio({layers=[],designName=''}){
     <div className="fashion-3d-heading"><div><span>VESTRA · 3D FITTING ROOM</span><h3>غرفة القياس ثلاثية الأبعاد</h3><p>{designName?'معاينة ثلاثية الأبعاد لتصميم: '+designName:'عاين قطع الباترون والخامات على المانيكان.'}</p></div><span className="fashion-3d-live">3D PREVIEW</span></div>
     <div className="fashion-3d-layout">
       <div className="fashion-3d-viewer">
-        <Scene garment={garment} color={color} roughness={roughness} showBody={showBody} patternPieces={patternPieces} showPatternPieces={showPatternPieces} fitScale={fitScale} drape={drape} showDarts={showDarts} showStitches={showStitches} showAllowance={showAllowance}/>
+        <Scene garment={garment} color={color} roughness={roughness} showBody={showBody} patternPieces={patternPieces} showPatternPieces={showPatternPieces} fitScale={fitScale} drape={drape} showDarts={showDarts} showStitches={showStitches} showAllowance={showAllowance} fabricPreset={fabricPreset} windStrength={windStrength}/>
         <div className="fashion-3d-hint">اسحب للتدوير · استخدم إصبعين أو عجلة الفأرة للتقريب</div>
         {patternPieces.length>0&&showPatternPieces&&<div className="fashion-3d-pattern-badge">مقاس {selectedSize} · {patternPieces.length} قطع</div>}
-        {drape&&<div className="fashion-3d-drape-badge">محاكاة انسياب أولية نشطة</div>}
+        {drape&&<div className="fashion-3d-drape-badge">محاكاة فيزيائية نشطة · {fabricPreset.label}</div>}
       </div>
       <aside className="fashion-3d-controls">
         {patternPieces.length>0&&<div className="fashion-3d-pattern-control"><strong>قطع الباترون المرسلة</strong><span>{patternPieces.map(piece=>piece.name).join(' · ')}</span><label className="fashion-3d-toggle"><input type="checkbox" checked={showPatternPieces} onChange={event=>setShowPatternPieces(event.target.checked)}/> عرض الباترون على المانيكان</label></div>}
@@ -316,7 +313,7 @@ export default function Fashion3DStudio({layers=[],designName=''}){
             <label className="fashion-3d-toggle"><input type="checkbox" checked={showAllowance} onChange={event=>setShowAllowance(event.target.checked)}/> بدل الخياطة</label>
           </div>
           <label className="fashion-3d-range">معايرة المقاس <span>{Math.round(fitScale*100)}%</span><input type="range" min="0.88" max="1.12" step="0.01" value={fitScale} onChange={event=>setFitScale(Number(event.target.value))}/></label>
-          <div className="fashion-3d-drape-control"><strong>انسياب القماش</strong><label className="fashion-3d-toggle"><input type="checkbox" checked={drape} onChange={event=>setDrape(event.target.checked)}/> تشغيل حركة القماش</label><small>حركة مرئية تقريبية للطيات؛ ليست محاكاة فيزيائية كاملة للخياطة أو وزن النسيج.</small></div>
+          <div className="fashion-3d-drape-control"><strong>محاكاة القماش الفيزيائية</strong><label className="fashion-3d-toggle"><input type="checkbox" checked={drape} onChange={event=>setDrape(event.target.checked)}/> تشغيل المحاكاة</label><div className="fashion-3d-fabric-presets"><span>نوع النسيج</span><div>{fabricPresets.map(preset=><button key={preset.id} type="button" className={fabricType===preset.id?'active':''} onClick={()=>setFabricType(preset.id)}>{preset.label}</button>)}</div></div><label className="fashion-3d-range">قوة الهواء <span>{Math.round(windStrength*100)}%</span><input type="range" min="0" max="0.65" step="0.01" value={windStrength} onChange={event=>setWindStrength(Number(event.target.value))}/></label><small>تحسب النسخة الأولى الجاذبية ومقاومة التمدد والانحناء والتصادم التقريبي مع جسم المانيكان. الخياطة بين القطع المتجاورة ومحاكاة النسيج الصناعية الدقيقة مراحل لاحقة.</small></div>
         </>}
         <label className="fashion-3d-toggle"><input type="checkbox" checked={showBody} onChange={event=>setShowBody(event.target.checked)}/> إظهار جسم المانيكان</label>
         <p className="fashion-3d-note">{patternPieces.length>0?'تُستخدم قياسات الصدر والوسط والأرداف لتقريب سطح المانيكان، مع إمكانية معايرة الحجم يدويًا. راجع تطابق الحواف والبنسات قبل اعتماد الباترون؛ المعاينة ليست قياسًا صناعيًا معتمدًا.':'أرسل قطعًا من معمل الباترونات إلى لوحة التصميم لتظهر هنا على المانيكان.'}</p>
