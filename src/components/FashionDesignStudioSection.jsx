@@ -163,7 +163,6 @@ export default function FashionDesignStudioSection({user,onNotice,onTryOn}){
  const [shapeStart,setShapeStart]=useState(null)
  const [showLayers,setShowLayers]=useState(true)
  const [workspaceMode,setWorkspaceMode]=useState('editor')
- const [patternTransferNotice,setPatternTransferNotice]=useState('')
  const [openToolMenu,setOpenToolMenu]=useState('')
  const [selectionBounds,setSelectionBounds]=useState(null)
  const selectedShapeRef=useRef(null)
