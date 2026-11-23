@@ -170,12 +170,20 @@ function createPathLine(pathData, piece, side, fitScale, inset = 1) {
     }
     const vertices=[]
     for(let i=0;i<points.length;i+=1){
-      // Every SVG subpath is sampled as a continuous line; consecutive points form the stroke.
       if(i>0){vertices.push(...points[i-1],...points[i])}
     }
     if(!vertices.length)return null
+    const distances=[]
+    let travelled=0
+    for(let i=0;i<vertices.length;i+=6){
+      const dx=vertices[i+3]-vertices[i],dy=vertices[i+4]-vertices[i+1],dz=vertices[i+5]-vertices[i+2]
+      const segment=Math.sqrt(dx*dx+dy*dy+dz*dz)
+      distances.push(travelled,travelled+segment)
+      travelled+=segment
+    }
     const geometry=new BufferGeometry()
     geometry.setAttribute('position',new Float32BufferAttribute(vertices,3))
+    geometry.setAttribute('lineDistance',new Float32BufferAttribute(distances,1))
     geometry.computeBoundingSphere()
     return geometry
   } catch(error) {
