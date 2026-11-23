@@ -315,18 +315,22 @@ export default function Fashion3DStudio({layers=[],designName=''}){
   const [showStitches,setShowStitches]=useState(true)
   const [showAllowance,setShowAllowance]=useState(false)
   const patternPieces=useMemo(()=>layers.filter(layer=>layer.category==='pattern-piece'&&layer.visible!==false&&layer.patternMetadata?.path).map(layer=>({...layer.patternMetadata,id:layer.patternMetadata.pieceId,name:layer.patternMetadata.pieceName||layer.name})),[layers])
+  const activePatternPieces=useMemo(()=>{
+    const allowed=garment==='dress'?['bodice','skirt','sleeve']:garment==='top'||garment==='jacket'?['bodice','sleeve']:garment==='skirt'?['skirt']:['trouser','trousers']
+    return patternPieces.filter(piece=>allowed.includes(piece.kind))
+  },[patternPieces,garment])
   const selectedSize=patternPieces[0]?.size
   return <section className="fashion-3d-studio" dir="rtl">
     <div className="fashion-3d-heading"><div><span>VESTRA · 3D FITTING ROOM</span><h3>غرفة القياس ثلاثية الأبعاد</h3><p>{designName?'معاينة ثلاثية الأبعاد لتصميم: '+designName:'عاين قطع الباترون والخامات على المانيكان.'}</p></div><span className="fashion-3d-live">3D PREVIEW</span></div>
     <div className="fashion-3d-layout">
       <div className="fashion-3d-viewer">
-        <Scene garment={garment} color={color} roughness={roughness} showBody={showBody} patternPieces={patternPieces} showPatternPieces={showPatternPieces} fitScale={fitScale} drape={drape} showDarts={showDarts} showStitches={showStitches} showAllowance={showAllowance} fabricPreset={fabricPreset} windStrength={windStrength}/>
+        <Scene garment={garment} color={color} roughness={roughness} showBody={showBody} patternPieces={activePatternPieces} showPatternPieces={showPatternPieces} fitScale={fitScale} drape={drape} showDarts={showDarts} showStitches={showStitches} showAllowance={showAllowance} fabricPreset={fabricPreset} windStrength={windStrength}/>
         <div className="fashion-3d-hint">اسحب للتدوير · استخدم إصبعين أو عجلة الفأرة للتقريب</div>
-        {patternPieces.length>0&&showPatternPieces&&<div className="fashion-3d-pattern-badge">مقاس {selectedSize} · {patternPieces.length} قطع</div>}
+        {activePatternPieces.length>0&&showPatternPieces&&<div className="fashion-3d-pattern-badge">مقاس {selectedSize} · {activePatternPieces.length} قطع مناسبة</div>}
         {drape&&<div className="fashion-3d-drape-badge">محاكاة فيزيائية نشطة · {fabricPreset.label}</div>}
       </div>
       <aside className="fashion-3d-controls">
-        {patternPieces.length>0&&<div className="fashion-3d-pattern-control"><strong>قطع الباترون المرسلة</strong><span>{patternPieces.map(piece=>piece.name).join(' · ')}</span><label className="fashion-3d-toggle"><input type="checkbox" checked={showPatternPieces} onChange={event=>setShowPatternPieces(event.target.checked)}/> عرض الباترون على المانيكان</label></div>}
+        {patternPieces.length>0&&<div className="fashion-3d-pattern-control"><strong>قطع الباترون المرسلة</strong><span>{activePatternPieces.length?activePatternPieces.map(piece=>piece.name).join(' · '):'لا توجد قطع متوافقة مع نوع القطعة المختار'}</span><label className="fashion-3d-toggle"><input type="checkbox" checked={showPatternPieces} onChange={event=>setShowPatternPieces(event.target.checked)}/> عرض الباترون على المانيكان</label></div>}
         <div><strong>نوع القطعة التجريبية</strong><div className="fashion-3d-options">{garmentOptions.map(option=><button key={option.id} type="button" className={garment===option.id?'active':''} onClick={()=>setGarment(option.id)}>{option.label}</button>)}</div></div>
         <label className="fashion-3d-color">لون القماش <input type="color" value={color} onChange={event=>setColor(event.target.value)}/></label>
         <label className="fashion-3d-range">ملمس القماش <span>{roughness<0.35?'ناعم ولامع':roughness>0.78?'مطفي وخشن':'متوازن'}</span><input type="range" min="0.12" max="1" step="0.04" value={roughness} onChange={event=>setRoughness(Number(event.target.value))}/></label>
