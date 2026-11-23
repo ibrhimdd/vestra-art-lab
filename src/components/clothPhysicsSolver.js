@@ -110,12 +110,12 @@ export function createClothSolver(geometry, kind = 'bodice', measurements = {}, 
     } else if (kind === 'sleeve') {
       const armX = side * (0.31 + v * 0.38) * fitScale
       const armY = (1.9 - v * 0.86) * fitScale + (1 - fitScale) * 1.2
-      const radial = Math.hypot(y - armY, z - 0.09)
+      const radial = Math.hypot(y - armY, z)
       const minimum = 0.125
       if (radial > 0.0001 && radial < minimum) {
         const scale = minimum / radial
         node.position[1] = armY + (y - armY) * scale
-        node.position[2] = 0.09 + (z - 0.09) * scale
+        node.position[2] = z * scale
       }
       // Keep the sleeve outside the upper arm instead of letting it tunnel through.
       if (Math.abs(x - armX) < 0.025) node.position[0] += side * 0.025
