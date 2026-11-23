@@ -164,12 +164,14 @@ function createPathLine(pathData, piece, side, fitScale, inset = 1) {
   if (!pathData) return null
   try {
     const width=Math.max(1,Number(piece.width)||1),height=Math.max(1,Number(piece.height)||1)
-    const parsed=new SVGLoader().parse('<svg xmlns="http://www.w3.org/2000/svg" width="'+width+'" height="'+height+'" viewBox="0 0 '+width+' '+height+'"><path d="'+pathData.replace(/"/g,'&quot;')+'" fill="none" stroke="#000"/></svg>')
+    const svgForPath=d=>'<svg xmlns="http://www.w3.org/2000/svg" width="'+width+'" height="'+height+'" viewBox="0 0 '+width+' '+height+'"><path d="'+d.replace(/"/g,'&quot;')+'" fill="none" stroke="#000"/></svg>'
+    const reference= new SVGLoader().parse(svgForPath(piece.path))
+    const referencePoints=reference.paths.flatMap(path=>path.subPaths.flatMap(subPath=>subPath.getPoints(48)))
+    const parsed=new SVGLoader().parse(svgForPath(pathData))
     const subPaths=parsed.paths.flatMap(path=>path.subPaths.map(subPath=>subPath.getPoints(48))).filter(points=>points.length>1)
-    const allPoints=subPaths.flat()
-    if(!allPoints.length)return null
-    const minX=Math.min(...allPoints.map(point=>point.x)),maxX=Math.max(...allPoints.map(point=>point.x))
-    const minY=Math.min(...allPoints.map(point=>point.y)),maxY=Math.max(...allPoints.map(point=>point.y))
+    if(!referencePoints.length||!subPaths.length)return null
+    const minX=Math.min(...referencePoints.map(point=>point.x)),maxX=Math.max(...referencePoints.map(point=>point.x))
+    const minY=Math.min(...referencePoints.map(point=>point.y)),maxY=Math.max(...referencePoints.map(point=>point.y))
     const spanX=Math.max(0.001,maxX-minX),spanY=Math.max(0.001,maxY-minY)
     const projection=createProjection(piece,side,fitScale)
     const vertices=[],distances=[]
@@ -213,10 +215,11 @@ function PatternLine({ geometry, color, dashed = false, width = 1 }) {
 function PatternPanel({ piece, side, color, roughness, fitScale, drape, showDarts, showStitches, showAllowance }) {
   const meshRef=useRef(null)
   const frameRef=useRef(0)
+  const seamRatio=clamp((Number(piece.measurements?.seam)||1.5)/Math.max(20,Math.min(piece.width,piece.height)),0.015,0.075)
   const geometry=useMemo(()=>createPatternGeometry(piece,side,fitScale),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,fitScale,side])
   const cutLine=useMemo(()=>createPathLine(piece.path,piece,side,fitScale,1),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,fitScale,side])
-  const stitchLine=useMemo(()=>createPathLine(piece.path,piece,side,fitScale,0.955),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,fitScale,side])
-  const allowanceLine=useMemo(()=>createPathLine(piece.path,piece,side,fitScale,1.045),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,fitScale,side])
+  const stitchLine=useMemo(()=>createPathLine(piece.path,piece,side,fitScale,1-seamRatio),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,piece.measurements?.seam,fitScale,side,seamRatio])
+  const allowanceLine=useMemo(()=>createPathLine(piece.path,piece,side,fitScale,1+seamRatio),[piece.path,piece.width,piece.height,piece.kind,piece.pieceId,piece.measurements?.seam,fitScale,side,seamRatio])
   const dartLines=useMemo(()=>showDarts?(piece.darts||[]).map(dart=>createPathLine(dart.d,piece,side,fitScale,1)):[],[piece.darts,piece.kind,piece.width,piece.height,piece.pieceId,fitScale,side,showDarts])
   useEffect(()=>()=>{geometry?.dispose();cutLine?.dispose();stitchLine?.dispose();allowanceLine?.dispose();dartLines.forEach(line=>line?.dispose())},[geometry,cutLine,stitchLine,allowanceLine,dartLines])
   useFrame(({clock})=>{
