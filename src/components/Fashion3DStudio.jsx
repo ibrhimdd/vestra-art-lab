@@ -1,7 +1,6 @@
 import { Suspense, useMemo, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ContactShadows, Environment, OrbitControls, Stage } from '@react-three/drei'
-import { CapsuleGeometry } from 'three'
 import './Fashion3DStudio.css'
 
 const garmentOptions = [
