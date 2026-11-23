@@ -44,6 +44,17 @@ function Mannequin({ garment, color, roughness, showBody, showBaseGarment, measu
     new Vector2(0.075, 1.96),
     new Vector2(0.062, 2.04)
   ], [bustRadius, waistRadius, hipRadius])
+  const topGarmentProfile = useMemo(
+    () => torsoProfile.filter(point => point.y >= 1.08 && point.y <= 1.91).map(point => new Vector2(point.x + 0.018, point.y)),
+    [torsoProfile]
+  )
+  const skirtGarmentProfile = useMemo(() => [
+    new Vector2(waistRadius + 0.018, 1.12),
+    new Vector2(waistRadius + 0.022, 1.02),
+    new Vector2(hipRadius + 0.025, 0.84),
+    new Vector2(hipRadius * 1.28, 0.62),
+    new Vector2(hipRadius * 1.38, 0.48)
+  ], [waistRadius, hipRadius])
   const limbMaterial = <meshStandardMaterial color={skin} roughness={0.72} />
   return (
     <group position={[0, -0.15, 0]}>
@@ -52,7 +63,7 @@ function Mannequin({ garment, color, roughness, showBody, showBaseGarment, measu
           <latheGeometry args={[torsoProfile, 64]} />
           <meshStandardMaterial color={skin} roughness={0.76} />
         </mesh>
-        <mesh position={[0, 2.24, 0]} scale={[0.19, 0.255, 0.17]} castShadow>
+        <mesh position={[0, 2.22, 0]} scale={[0.15, 0.205, 0.14]} castShadow>
           <sphereGeometry args={[1, 40, 32]} />
           <meshStandardMaterial color={skin} roughness={0.7} />
         </mesh>
@@ -77,10 +88,10 @@ function Mannequin({ garment, color, roughness, showBody, showBaseGarment, measu
       </>}
       {showBaseGarment && <>
         {(garment === 'dress' || garment === 'top' || garment === 'jacket') && <>
-          <mesh position={[0, 1.53, 0]} castShadow><cylinderGeometry args={[bustRadius, waistRadius, 0.94, 64, 8, true]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>
+          <mesh castShadow receiveShadow><latheGeometry args={[topGarmentProfile, 96]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>
           {garment === 'jacket' && <mesh position={[0, 1.55, 0.012]}><boxGeometry args={[0.018, 0.82, 0.012]} /><meshStandardMaterial color="#eee8dc" roughness={0.65} /></mesh>}
         </>}
-        {(garment === 'dress' || garment === 'skirt') && <mesh position={[0, 0.78, 0]} castShadow><cylinderGeometry args={[waistRadius, garment === 'dress' ? hipRadius * 1.45 : hipRadius * 1.55, 1.15, 64, 8, true]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>}
+        {(garment === 'dress' || garment === 'skirt') && <mesh castShadow receiveShadow><latheGeometry args={[skirtGarmentProfile, 96]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>}
         {garment === 'trousers' && <>
           <mesh position={[-0.105, 0.1, 0]} castShadow><cylinderGeometry args={[0.09, 0.075, 1.3, 32, 8, true]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>
           <mesh position={[0.105, 0.1, 0]} castShadow><cylinderGeometry args={[0.09, 0.075, 1.3, 32, 8, true]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>
