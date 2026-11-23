@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Download, Ruler, Scissors, Printer, RotateCcw, Info } from 'lucide-react'
+import './PatternDraftingStudio.css'
 
 const DEFAULTS = { bust: 92, waist: 74, hip: 98, shoulder: 38, backLength: 40, skirtLength: 60, sleeveLength: 58, bicep: 30, trouserLength: 102, rise: 27, ease: 4, seam: 1.5 }
 const FIELDS = [
