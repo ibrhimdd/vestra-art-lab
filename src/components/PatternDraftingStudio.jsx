@@ -68,9 +68,10 @@ const getEditableHandles = (piece,m) => {
       {id:'neck-width',label:'عرض الرقبة',x:neck,y:0,field:'neckWidth',axis:'x',offset:0,factor:1},
       {id:'neck-depth',label:'عمق الرقبة',x:0,y:isFront?m.frontNeckDepth:m.backNeckDepth,field:isFront?'frontNeckDepth':'backNeckDepth',axis:'y',offset:0,factor:1},
       {id:'shoulder',label:'نهاية الكتف',x:neck+shoulder,y:3,field:'shoulder',axis:'x',offset:neck,factor:.5},
-      {id:'armhole',label:'عمق الحردة',x:bust,y:arm+6,field:'armholeDepth',axis:'y',offset:6,factor:1},
+      {id:'armhole',label:'عمق الحردة',x:bust+2.2,y:arm+6,field:'armholeDepth',axis:'y',offset:6,factor:1},
       {id:'bust-width',label:'عرض الصدر',x:bust,y:arm+6,field:'bust',axis:'x',offset:m.ease/4,factor:.25},
-      {id:'waist-width',label:'عرض الوسط',x:waist,y:waistY,field:'waist',axis:'x',offset:m.ease/4,factor:.25}
+      {id:'waist-width',label:'عرض الوسط',x:waist,y:waistY,field:'waist',axis:'x',offset:m.ease/4,factor:.25},
+      {id:'body-length',label:'طول الظهر',x:0,y:waistY,field:'backLength',axis:'y',offset:0,factor:1}
     ]
     if(isFront){handles.push({id:'dart-apex',label:'رأس بنسة الصدر',x:dartX,y:Math.max(m.frontNeckDepth+8,m.bustPoint),field:'bustPoint',axis:'y',offset:0,factor:1,dart:true},{id:'dart-width',label:'عرض بنسة الصدر',x:dartX+m.dartWidth/2,y:waistY,field:'dartWidth',axis:'x',offset:dartX,factor:.5,dart:true})}
     else{handles.push({id:'dart-apex',label:'طول بنسة الظهر',x:dartX,y:waistY-m.dartLength*.72,field:'dartLength',axis:'y',offset:waistY,factor:-.72,dart:true},{id:'dart-width',label:'عرض بنسة الظهر',x:dartX+m.waistDart/2,y:waistY,field:'waistDart',axis:'x',offset:dartX,factor:.5,dart:true})}
