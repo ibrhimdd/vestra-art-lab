@@ -1,6 +1,6 @@
-import { Suspense, useMemo, useState } from 'react'
-import { Canvas } from '@react-three/fiber'
-import { ContactShadows, Environment, OrbitControls, Stage } from '@react-three/drei'
+import { useEffect, useMemo, useState } from 'react'
+import { Canvas, useThree } from '@react-three/fiber'
+import { ContactShadows, OrbitControls } from '@react-three/drei'
 import './Fashion3DStudio.css'
 
 const garmentOptions = [
@@ -102,19 +102,38 @@ function Mannequin({ garment, color, roughness, showBody }) {
   )
 }
 
+function CameraAim() {
+  const { camera } = useThree()
+  useEffect(() => {
+    // The mannequin is about 2.9 units tall; aim at its torso, not at the floor.
+    camera.position.set(4.2, 3.1, 7)
+    camera.lookAt(0, 1.2, 0)
+    camera.updateProjectionMatrix()
+  }, [camera])
+  return null
+}
+
 function Scene({ garment, color, roughness, showBody }) {
-  return <Canvas shadows dpr={[1, 1.7]} camera={{ position: [3.5, 2.5, 5.2], fov: 36 }}>
+  return <Canvas
+    shadows
+    dpr={[1, 1.5]}
+    camera={{ position: [4.2, 3.1, 7], fov: 38, near: 0.1, far: 100 }}
+    gl={{ antialias: true, alpha: false }}
+    onCreated={({ gl }) => { gl.setClearColor('#f3f0e9', 1) }}
+  >
     <color attach="background" args={['#f3f0e9']} />
-    <ambientLight intensity={0.75} />
-    <directionalLight position={[4, 6, 5]} intensity={2.1} castShadow shadow-mapSize={[1024, 1024]} />
-    <Suspense fallback={null}>
-      <Stage environment="city" intensity={0.45} adjustCamera={false}>
-        <Mannequin garment={garment} color={color} roughness={roughness} showBody={showBody} />
-      </Stage>
-      <Environment preset="studio" />
-    </Suspense>
-    <ContactShadows position={[0, -0.53, 0]} opacity={0.3} scale={5} blur={2.5} far={2} />
-    <OrbitControls makeDefault enablePan={false} minDistance={3.2} maxDistance={8} minPolarAngle={0.45} maxPolarAngle={Math.PI / 1.8} />
+    <CameraAim />
+    <ambientLight intensity={1.15} />
+    <hemisphereLight args={['#ffffff', '#b9aa98', 1.1]} />
+    <directionalLight position={[4, 7, 6]} intensity={2.4} castShadow shadow-mapSize={[1024, 1024]} />
+    <directionalLight position={[-4, 3, -3]} intensity={0.8} />
+    <Mannequin garment={garment} color={color} roughness={roughness} showBody={showBody} />
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.535, 0]} receiveShadow>
+      <planeGeometry args={[20, 20]} />
+      <meshStandardMaterial color="#e8e2d8" roughness={0.95} />
+    </mesh>
+    <ContactShadows position={[0, -0.52, 0]} opacity={0.28} scale={5} blur={2.5} far={2} />
+    <OrbitControls makeDefault enablePan={false} minDistance={3.2} maxDistance={9} minPolarAngle={0.35} maxPolarAngle={Math.PI / 1.8} target={[0, 1.2, 0]} />
   </Canvas>
 }
 
