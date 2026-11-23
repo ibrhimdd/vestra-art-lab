@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { ContactShadows, OrbitControls } from '@react-three/drei'
-import { BufferGeometry, DoubleSide, Float32BufferAttribute, ShapeGeometry } from 'three'
+import { BufferGeometry, DoubleSide, Float32BufferAttribute, ShapeGeometry, Vector2 } from 'three'
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
 import './Fashion3DStudio.css'
 
@@ -20,12 +20,21 @@ function Mannequin({ garment, color, roughness, showBody, showBaseGarment, measu
   const bustRadius = clamp(((measurements?.bust || 92) / (Math.PI * 100)), 0.25, 0.36)
   const waistRadius = clamp(((measurements?.waist || 74) / (Math.PI * 100)), 0.20, 0.31)
   const hipRadius = clamp(((measurements?.hip || 98) / (Math.PI * 100)), 0.26, 0.38)
+  const torsoProfile = useMemo(() => [
+    new Vector2(waistRadius * 0.96, 0.88),
+    new Vector2(waistRadius, 1.02),
+    new Vector2(waistRadius * 1.06, 1.2),
+    new Vector2(bustRadius * 0.98, 1.42),
+    new Vector2(bustRadius, 1.56),
+    new Vector2(bustRadius * 0.9, 1.78),
+    new Vector2(0.16, 1.91)
+  ], [bustRadius, waistRadius])
   return (
     <group position={[0, -0.15, 0]}>
       <mesh position={[0, 2.38, 0]} castShadow><sphereGeometry args={[0.25, 32, 32]} /><meshStandardMaterial color={skin} roughness={0.72} /></mesh>
       <mesh position={[0, 2.08, 0]} castShadow><cylinderGeometry args={[0.105, 0.13, 0.28, 24]} /><meshStandardMaterial color={skin} roughness={0.78} /></mesh>
-      {showBody && <mesh position={[0, 1.42, 0]} castShadow>
-        <cylinderGeometry args={[bustRadius, waistRadius, 1.05, 48, 2]} />
+      {showBody && <mesh castShadow receiveShadow>
+        <latheGeometry args={[torsoProfile, 48]} />
         <meshStandardMaterial color={skin} roughness={0.82} />
       </mesh>}
       <mesh position={[0, 0.75, 0]} castShadow><cylinderGeometry args={[waistRadius, hipRadius, 0.36, 36]} /><meshStandardMaterial color={skin} roughness={0.82} /></mesh>
