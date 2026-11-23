@@ -199,6 +199,24 @@ export default function FashionDesignStudioSection({user,onNotice,onTryOn}){
 
  const commit=next=>{setHistory(current=>[...current,layers].slice(-40));setFuture([]);setLayers(next)}
  const updateSelected=patch=>{if(selectedLayer?.locked)return;commit(layers.map(layer=>layer.id===selected?{...layer,...patch}:layer))}
+ const importPatternToCanvas=({pieces,selectedSize,measurements})=>{
+  const patternLayers=pieces.map((piece,index)=>{
+   const column=index%3,row=Math.floor(index/3);
+   const cellX=18+column*160,cellY=16+row*200;
+   const scale=Math.min(3.2,145/Math.max(1,piece.w),185/Math.max(1,piece.h));
+   const children=[
+    {id:uid(),category:'pattern-fill',name:'مساحة القطعة',path:piece.path,color:'#f4f0e5',stroke:false,strokeWidth:.45,svgRaw:true,x:0,y:0,scale:1,rotation:0,visible:true},
+    {id:uid(),category:'pattern-outline',name:'خط القص',path:piece.path,color:'#263329',stroke:true,strokeWidth:.8,svgRaw:true,x:0,y:0,scale:1,rotation:0,visible:true},
+    ...(piece.darts||[]).map((dart,dartIndex)=>({id:uid(),category:'pattern-dart',name:dart.label||'بنسة',path:dart.d,color:'#b46c4f',stroke:true,strokeWidth:.55,svgRaw:true,x:0,y:0,scale:1,rotation:0,visible:true})),
+    {id:uid(),category:'pattern-grainline',name:'خط النسيج',path:'M '+(piece.w/2)+' 4 V '+Math.max(8,piece.h-4),color:'#47877f',stroke:true,strokeWidth:.5,svgRaw:true,x:0,y:0,scale:1,rotation:0,visible:true}
+   ];
+   return {id:uid(),type:'group',category:'pattern-piece',name:piece.name+' · مقاس '+selectedSize,children,x:0,y:0,scale:1,rotation:0,visible:true,opacity:1,svgTransform:'matrix('+scale+' 0 0 '+scale+' '+cellX+' '+cellY+')',patternMetadata:{size:selectedSize,measurements,unit:'cm',pieceId:piece.id}};
+  });
+  if(!patternLayers.length){onNotice?.('لا توجد قطع باترون لإرسالها.');return}
+  const next=[...layers,...patternLayers];commit(next);
+  const last=patternLayers[patternLayers.length-1];setSelected(last.id);setSelectedIds([last.id]);setTool('select');setWorkspaceMode('editor');setOpenToolMenu('');
+  onNotice?.('تم إرسال '+patternLayers.length+' قطع باترون كطبقات Vector مستقلة إلى لوحة التصميم. يمكنك تحديد كل قطعة وتحريكها أو تجميعها وتصديرها.');
+ };
  const addPart=item=>{
   const layer={id:uid(),catalogId:item.id,category,name:item.name,path:item.path,color,stroke:!!item.stroke,strokeWidth:item.stroke?5:2.5,x:0,y:0,scale:1,rotation:0,visible:true,textureScale:60,textureRotation:0,textureOpacity:1}
   const next=category==='bodies'?[layer]:[...layers,layer]
@@ -248,7 +266,7 @@ export default function FashionDesignStudioSection({user,onNotice,onTryOn}){
   <div className="section-heading fashion-studio-heading"><div><div className="section-kicker">VESTRA · MODULAR FASHION CANVAS</div><h2>استوديو تصميم الأزياء الحر</h2><p>ركّب القطعة من مكونات مستقلة، غيّر كل تفصيلة، أو ارسم فكرتك من الصفر.</p></div><button className="fashion-saved-toggle" onClick={()=>setShowLayers(v=>!v)}>{showLayers?<Eye size={15}/>:<EyeOff size={15}/>} الطبقات</button></div>
   
   <nav className="vestra-workspace-switch" aria-label="مساحات العمل"><button type="button" className={workspaceMode==='editor'?'active':''} onClick={()=>setWorkspaceMode('editor')}>محرر التصميم الحر</button><button type="button" className={workspaceMode==='patterns'?'active':''} onClick={()=>setWorkspaceMode('patterns')}>معمل الباترونات</button></nav>
-  {workspaceMode==='patterns'?<PatternDraftingStudio/>:<div className="vestra-editor-workspace">
+  {workspaceMode==='patterns'?<PatternDraftingStudio onSendToCanvas={importPatternToCanvas}/>:<div className="vestra-editor-workspace">
   <div className="fashion-presets"><strong>بدايات جاهزة (اختيارية)</strong><button onClick={()=>applyPreset('tee',['sleeve-short','collar-round','pocket-square'])}>تيشيرت يومي</button><button onClick={()=>applyPreset('jacket',['sleeve-long','collar-shirt','zipper','pocket-flap'])}>جاكيت عملي</button><button onClick={()=>applyPreset('dress',['sleeve-puff','collar-v','belt','hem-scallop'])}>فستان إبداعي</button><button onClick={()=>applyPreset('hoodie',['sleeve-long','collar-high','pocket-large'])}>هودي واسع</button></div>
   <div className={'fashion-modular-layout '+(showLayers?'':'hide-layers')}>
    <aside className="fashion-library-panel"><div className="fashion-library-heading"><span>COMPONENT LIBRARY</span><strong>مكتبة المكونات</strong><small>اختر أي جزء لإضافته إلى مساحة العمل</small><input ref={svgInput} type="file" accept=".svg,image/svg+xml" className="visually-hidden" onChange={importSvgFile}/><button type="button" className="fashion-import-svg" onClick={()=>svgInput.current?.click()}><ImagePlus size={14}/> استيراد مكوّن SVG</button></div><div className="fashion-category-tabs">{categories.map(item=><button key={item.id} className={category===item.id?'active':''} onClick={()=>setCategory(item.id)}><item.icon size={14}/>{item.label}</button>)}</div><label className="fashion-catalog-search"><Search size={14}/><input value={catalogSearch} onChange={e=>setCatalogSearch(e.target.value)} placeholder="ابحث عن كم، ياقة، جيب..."/><span>{(CATALOG[category]||[]).filter(item=>item.name.includes(catalogSearch)||item.id.includes(catalogSearch.toLowerCase())).length} عنصر</span></label><div className="fashion-component-grid">{(CATALOG[category]||[]).filter(item=>item.name.includes(catalogSearch)||item.id.includes(catalogSearch.toLowerCase())).map(item=><button key={item.id} onClick={()=>addPart(item)}><span className="fashion-component-thumb"><svg viewBox="100 70 300 430"><path d={item.path} fill={item.stroke?'none':color} stroke="#dbe4d2" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/></svg></span><strong>{item.name}</strong><small>إضافة للمساحة <Plus size={11}/></small></button>)}</div>{!(CATALOG[category]||[]).some(item=>item.name.includes(catalogSearch)||item.id.includes(catalogSearch.toLowerCase()))&&<div className="fashion-catalog-empty">لا توجد مكونات مطابقة للبحث في هذا القسم.</div>}<div className="fashion-library-tip"><Sparkles size={15}/> كل المكونات Vector أصلية، ويمكن تلوينها وتكبيرها وتحريكها ودمجها مع طبقات أخرى.</div></aside>
