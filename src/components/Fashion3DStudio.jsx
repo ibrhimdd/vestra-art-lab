@@ -24,55 +24,83 @@ const fabricPresets = [
 
 function Mannequin({ garment, color, roughness, showBody, showBaseGarment, measurements }) {
   const fabric = useMemo(() => ({ color, roughness, metalness: 0.02 }), [color, roughness])
-  const skin = '#d9b9a0'
-  const dark = '#403a38'
-  const bustRadius = clamp(((measurements?.bust || 92) / (Math.PI * 100)), 0.25, 0.36)
-  const waistRadius = clamp(((measurements?.waist || 74) / (Math.PI * 100)), 0.20, 0.31)
-  const hipRadius = clamp(((measurements?.hip || 98) / (Math.PI * 100)), 0.26, 0.38)
+  const skin = '#d8c5b2'
+  const bustRadius = clamp((Number(measurements?.bust) || 92) / (2 * Math.PI * 100), 0.105, 0.19)
+  const waistRadius = clamp((Number(measurements?.waist) || 74) / (2 * Math.PI * 100), 0.085, 0.16)
+  const hipRadius = clamp((Number(measurements?.hip) || 98) / (2 * Math.PI * 100), 0.11, 0.20)
   const torsoProfile = useMemo(() => [
-    new Vector2(waistRadius * 0.96, 0.88),
-    new Vector2(waistRadius, 1.02),
-    new Vector2(waistRadius * 1.06, 1.2),
-    new Vector2(bustRadius * 0.98, 1.42),
-    new Vector2(bustRadius, 1.56),
-    new Vector2(bustRadius * 0.9, 1.78),
-    new Vector2(0.16, 1.91)
-  ], [bustRadius, waistRadius])
+    new Vector2(hipRadius * 0.98, 0.70),
+    new Vector2(hipRadius, 0.82),
+    new Vector2(hipRadius * 0.94, 0.96),
+    new Vector2(waistRadius * 1.02, 1.10),
+    new Vector2(waistRadius, 1.23),
+    new Vector2(waistRadius * 1.08, 1.34),
+    new Vector2(bustRadius * 0.98, 1.48),
+    new Vector2(bustRadius, 1.58),
+    new Vector2(bustRadius * 0.94, 1.68),
+    new Vector2(0.155, 1.78),
+    new Vector2(0.19, 1.86),
+    new Vector2(0.145, 1.91),
+    new Vector2(0.075, 1.96),
+    new Vector2(0.062, 2.04)
+  ], [bustRadius, waistRadius, hipRadius])
+  const topGarmentProfile = useMemo(
+    () => torsoProfile.filter(point => point.y >= 1.08 && point.y <= 1.91).map(point => new Vector2(point.x + 0.018, point.y)),
+    [torsoProfile]
+  )
+  const skirtGarmentProfile = useMemo(() => [
+    new Vector2(waistRadius + 0.018, 1.12),
+    new Vector2(waistRadius + 0.022, 1.02),
+    new Vector2(hipRadius + 0.025, 0.84),
+    new Vector2(hipRadius * 1.28, 0.62),
+    new Vector2(hipRadius * 1.38, 0.48)
+  ], [waistRadius, hipRadius])
+  const limbMaterial = <meshStandardMaterial color={skin} roughness={0.72} />
   return (
     <group position={[0, -0.15, 0]}>
-      <mesh position={[0, 2.38, 0]} castShadow><sphereGeometry args={[0.25, 32, 32]} /><meshStandardMaterial color={skin} roughness={0.72} /></mesh>
-      <mesh position={[0, 2.08, 0]} castShadow><cylinderGeometry args={[0.105, 0.13, 0.28, 24]} /><meshStandardMaterial color={skin} roughness={0.78} /></mesh>
-      {showBody && <mesh castShadow receiveShadow>
-        <latheGeometry args={[torsoProfile, 48]} />
-        <meshStandardMaterial color={skin} roughness={0.82} />
-      </mesh>}
-      <mesh position={[0, 0.75, 0]} castShadow><cylinderGeometry args={[waistRadius, hipRadius, 0.36, 36]} /><meshStandardMaterial color={skin} roughness={0.82} /></mesh>
-      <mesh position={[-0.16, 0.13, 0]} castShadow><capsuleGeometry args={[0.105, 0.82, 8, 16]} /><meshStandardMaterial color={skin} roughness={0.82} /></mesh>
-      <mesh position={[0.16, 0.13, 0]} castShadow><capsuleGeometry args={[0.105, 0.82, 8, 16]} /><meshStandardMaterial color={skin} roughness={0.82} /></mesh>
-      <mesh position={[-0.49, 1.35, 0]} rotation={[0, 0, -0.12]} castShadow><capsuleGeometry args={[0.09, 0.86, 8, 16]} /><meshStandardMaterial color={skin} roughness={0.82} /></mesh>
-      <mesh position={[0.49, 1.35, 0]} rotation={[0, 0, 0.12]} castShadow><capsuleGeometry args={[0.09, 0.86, 8, 16]} /><meshStandardMaterial color={skin} roughness={0.82} /></mesh>
-      <mesh position={[0, 2.66, 0]} castShadow><sphereGeometry args={[0.255, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.48]} /><meshStandardMaterial color={dark} roughness={0.95} /></mesh>
+      {showBody && <>
+        <mesh castShadow receiveShadow>
+          <latheGeometry args={[torsoProfile, 64]} />
+          <meshStandardMaterial color={skin} roughness={0.76} />
+        </mesh>
+        <mesh position={[0, 2.22, 0]} scale={[0.15, 0.205, 0.14]} castShadow>
+          <sphereGeometry args={[1, 40, 32]} />
+          <meshStandardMaterial color={skin} roughness={0.7} />
+        </mesh>
+        <mesh position={[-0.205, 1.79, 0]} rotation={[0, 0, -0.22]} castShadow>
+          <capsuleGeometry args={[0.082, 0.72, 10, 20]} />{limbMaterial}
+        </mesh>
+        <mesh position={[0.205, 1.79, 0]} rotation={[0, 0, 0.22]} castShadow>
+          <capsuleGeometry args={[0.082, 0.72, 10, 20]} />{limbMaterial}
+        </mesh>
+        <mesh position={[-0.255, 1.26, 0]} rotation={[0, 0, -0.12]} castShadow>
+          <capsuleGeometry args={[0.062, 0.42, 10, 20]} />{limbMaterial}
+        </mesh>
+        <mesh position={[0.255, 1.26, 0]} rotation={[0, 0, 0.12]} castShadow>
+          <capsuleGeometry args={[0.062, 0.42, 10, 20]} />{limbMaterial}
+        </mesh>
+        <mesh position={[-0.105, 0.16, 0]} castShadow>
+          <capsuleGeometry args={[0.075, 0.82, 12, 24]} />{limbMaterial}
+        </mesh>
+        <mesh position={[0.105, 0.16, 0]} castShadow>
+          <capsuleGeometry args={[0.075, 0.82, 12, 24]} />{limbMaterial}
+        </mesh>
+      </>}
       {showBaseGarment && <>
         {(garment === 'dress' || garment === 'top' || garment === 'jacket') && <>
-          <mesh position={[0, 1.53, 0]} castShadow><cylinderGeometry args={[0.325, 0.39, 0.94, 64, 3, true]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>
-          <mesh position={[0, 1.98, 0]} castShadow><cylinderGeometry args={[0.29, 0.325, 0.16, 64, 1, true]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>
+          <mesh castShadow receiveShadow><latheGeometry args={[topGarmentProfile, 96]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>
           {garment === 'jacket' && <mesh position={[0, 1.55, 0.012]}><boxGeometry args={[0.018, 0.82, 0.012]} /><meshStandardMaterial color="#eee8dc" roughness={0.65} /></mesh>}
         </>}
-        {(garment === 'dress' || garment === 'skirt') && <mesh position={[0, 0.78, 0]} castShadow><cylinderGeometry args={[0.29, garment === 'dress' ? 0.72 : 0.78, 1.15, 64, 4, true]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>}
-        {(garment === 'top' || garment === 'jacket') && <>
-          <mesh position={[-0.43, 1.48, 0]} rotation={[0, 0, -0.18]} castShadow><capsuleGeometry args={[0.105, 0.78, 8, 20]} /><meshStandardMaterial {...fabric} /></mesh>
-          <mesh position={[0.43, 1.48, 0]} rotation={[0, 0, 0.18]} castShadow><capsuleGeometry args={[0.105, 0.78, 8, 20]} /><meshStandardMaterial {...fabric} /></mesh>
-        </>}
+        {(garment === 'dress' || garment === 'skirt') && <mesh castShadow receiveShadow><latheGeometry args={[skirtGarmentProfile, 96]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>}
         {garment === 'trousers' && <>
-          <mesh position={[-0.17, 0.1, 0]} castShadow><cylinderGeometry args={[0.16, 0.135, 1.3, 32, 1, true]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>
-          <mesh position={[0.17, 0.1, 0]} castShadow><cylinderGeometry args={[0.16, 0.135, 1.3, 32, 1, true]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>
+          <mesh position={[-0.105, 0.1, 0]} castShadow><cylinderGeometry args={[0.09, 0.075, 1.3, 32, 8, true]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>
+          <mesh position={[0.105, 0.1, 0]} castShadow><cylinderGeometry args={[0.09, 0.075, 1.3, 32, 8, true]} /><meshStandardMaterial {...fabric} side={DoubleSide} /></mesh>
         </>}
       </>}
-      <mesh position={[0, -0.47, 0]} receiveShadow><cylinderGeometry args={[0.42, 0.42, 0.07, 48]} /><meshStandardMaterial color="#b8a58b" roughness={0.8} /></mesh>
+      <mesh position={[0, -0.47, 0]} receiveShadow><cylinderGeometry args={[0.34, 0.34, 0.07, 48]} /><meshStandardMaterial color="#b8a58b" roughness={0.8} /></mesh>
     </group>
   )
 }
-
 function subdivideGeometry(source, levels = 2) {
   let geometry = source.toNonIndexed()
   for (let level = 0; level < levels; level += 1) {
@@ -98,38 +126,45 @@ function createProjection(piece, side, fitScale) {
   const isBack = id.includes('back')
   const face = isBack ? -1 : 1
   const m = piece.measurements || {}
-  const bust = Number(m.bust) || 92, waist = Number(m.waist) || 74, hip = Number(m.hip) || 98
-  const bustR = clamp(bust / (Math.PI * 100), 0.25, 0.36) * fitScale
-  const waistR = clamp(waist / (Math.PI * 100), 0.20, 0.31) * fitScale
-  const hipR = clamp(hip / (Math.PI * 100), 0.26, 0.38) * fitScale
+  const bustR = clamp((Number(m.bust) || 92) / (2 * Math.PI * 100), 0.105, 0.19) * fitScale
+  const waistR = clamp((Number(m.waist) || 74) / (2 * Math.PI * 100), 0.085, 0.16) * fitScale
+  const hipR = clamp((Number(m.hip) || 98) / (2 * Math.PI * 100), 0.11, 0.20) * fitScale
+  const bicepR = clamp((Number(m.bicep) || 30) / (2 * Math.PI * 100), 0.035, 0.075) * fitScale
   return (nx, ny, lift = 0) => {
     let x=0,y=0,z=0
     if (kind === 'bodice') {
-      const radius = ny < 0.45 ? lerp(bustR*0.88,bustR,ny/0.45) : lerp(bustR,waistR,(ny-0.45)/0.55)
+      const radius = (ny < 0.45
+        ? lerp(bustR * 0.94, bustR, ny / 0.45)
+        : lerp(bustR, waistR, (ny - 0.45) / 0.55)) + 0.012 + lift
       const angle = nx * Math.PI * 0.49
       x = side * Math.sin(angle) * radius
-      z = face * (Math.cos(angle) * radius + 0.012 + lift)
-      y = (1.98 - ny * 0.91) * fitScale + (1-fitScale)*1.2
+      z = face * Math.cos(angle) * radius
+      y = 1.92 - ny * 0.88
     } else if (kind === 'skirt') {
-      const radius = lerp(waistR,hipR,Math.min(1,ny*1.5)) + ny*0.13*fitScale
+      const radius = lerp(waistR, hipR, Math.min(1, ny * 1.5)) + ny * 0.105 * fitScale + 0.012 + lift
       const angle = nx * Math.PI * 0.49
       x = side * Math.sin(angle) * radius
-      z = face * (Math.cos(angle) * radius + 0.012 + lift)
-      y = (1.12 - ny * 0.88) * fitScale + (1-fitScale)*0.8
+      z = face * Math.cos(angle) * radius
+      y = 1.10 - ny * 0.91
     } else if (kind === 'sleeve') {
-      const angle = (nx - 0.5) * Math.PI
-      x = side * (0.31 + ny * 0.38) * fitScale
-      y = (1.9 - ny * 0.86) * fitScale + (1-fitScale)*1.2
-      z = Math.sin(angle) * (0.115 + ny*0.025) + face*(0.09 + lift)
+      const angle = nx * Math.PI * 2
+      const centerX = side * (0.25 + ny * 0.18)
+      const centerY = 1.79 - ny * 0.82
+      const radius = bicepR * (1 - ny * 0.27) + 0.009 + lift
+      x = centerX + Math.cos(angle) * radius * 0.2
+      y = centerY + Math.cos(angle) * radius * 0.98
+      z = Math.sin(angle) * radius
     } else {
-      x = side * (0.16 + (nx-0.5)*0.12) * fitScale
-      y = (1.0 - ny * 1.26) * fitScale + (1-fitScale)*0.6
-      z = face * (0.12 + Math.sin(nx*Math.PI)*0.035 + lift)
+      const legRadius = (0.075 - ny * 0.012) * fitScale + 0.009 + lift
+      const angle = nx * Math.PI * 0.49
+      const centerX = side * 0.105
+      x = centerX + side * Math.sin(angle) * legRadius
+      z = face * Math.cos(angle) * legRadius
+      y = 0.91 - ny * 1.31
     }
     return [x,y,z]
   }
 }
-
 function createPatternGeometry(piece, side, fitScale) {
   if (!piece?.path || typeof document === 'undefined') return null
   try {
@@ -291,18 +326,22 @@ export default function Fashion3DStudio({layers=[],designName=''}){
   const [showStitches,setShowStitches]=useState(true)
   const [showAllowance,setShowAllowance]=useState(false)
   const patternPieces=useMemo(()=>layers.filter(layer=>layer.category==='pattern-piece'&&layer.visible!==false&&layer.patternMetadata?.path).map(layer=>({...layer.patternMetadata,id:layer.patternMetadata.pieceId,name:layer.patternMetadata.pieceName||layer.name})),[layers])
+  const activePatternPieces=useMemo(()=>{
+    const allowed=garment==='dress'?['bodice','skirt','sleeve']:garment==='top'||garment==='jacket'?['bodice','sleeve']:garment==='skirt'?['skirt']:['trouser','trousers']
+    return patternPieces.filter(piece=>allowed.includes(piece.kind))
+  },[patternPieces,garment])
   const selectedSize=patternPieces[0]?.size
   return <section className="fashion-3d-studio" dir="rtl">
     <div className="fashion-3d-heading"><div><span>VESTRA · 3D FITTING ROOM</span><h3>غرفة القياس ثلاثية الأبعاد</h3><p>{designName?'معاينة ثلاثية الأبعاد لتصميم: '+designName:'عاين قطع الباترون والخامات على المانيكان.'}</p></div><span className="fashion-3d-live">3D PREVIEW</span></div>
     <div className="fashion-3d-layout">
       <div className="fashion-3d-viewer">
-        <Scene garment={garment} color={color} roughness={roughness} showBody={showBody} patternPieces={patternPieces} showPatternPieces={showPatternPieces} fitScale={fitScale} drape={drape} showDarts={showDarts} showStitches={showStitches} showAllowance={showAllowance} fabricPreset={fabricPreset} windStrength={windStrength}/>
+        <Scene garment={garment} color={color} roughness={roughness} showBody={showBody} patternPieces={activePatternPieces} showPatternPieces={showPatternPieces} fitScale={fitScale} drape={drape} showDarts={showDarts} showStitches={showStitches} showAllowance={showAllowance} fabricPreset={fabricPreset} windStrength={windStrength}/>
         <div className="fashion-3d-hint">اسحب للتدوير · استخدم إصبعين أو عجلة الفأرة للتقريب</div>
-        {patternPieces.length>0&&showPatternPieces&&<div className="fashion-3d-pattern-badge">مقاس {selectedSize} · {patternPieces.length} قطع</div>}
+        {activePatternPieces.length>0&&showPatternPieces&&<div className="fashion-3d-pattern-badge">مقاس {selectedSize} · {activePatternPieces.length} قطع مناسبة</div>}
         {drape&&<div className="fashion-3d-drape-badge">محاكاة فيزيائية نشطة · {fabricPreset.label}</div>}
       </div>
       <aside className="fashion-3d-controls">
-        {patternPieces.length>0&&<div className="fashion-3d-pattern-control"><strong>قطع الباترون المرسلة</strong><span>{patternPieces.map(piece=>piece.name).join(' · ')}</span><label className="fashion-3d-toggle"><input type="checkbox" checked={showPatternPieces} onChange={event=>setShowPatternPieces(event.target.checked)}/> عرض الباترون على المانيكان</label></div>}
+        {patternPieces.length>0&&<div className="fashion-3d-pattern-control"><strong>قطع الباترون المرسلة</strong><span>{activePatternPieces.length?activePatternPieces.map(piece=>piece.name).join(' · '):'لا توجد قطع متوافقة مع نوع القطعة المختار'}</span><label className="fashion-3d-toggle"><input type="checkbox" checked={showPatternPieces} onChange={event=>setShowPatternPieces(event.target.checked)}/> عرض الباترون على المانيكان</label></div>}
         <div><strong>نوع القطعة التجريبية</strong><div className="fashion-3d-options">{garmentOptions.map(option=><button key={option.id} type="button" className={garment===option.id?'active':''} onClick={()=>setGarment(option.id)}>{option.label}</button>)}</div></div>
         <label className="fashion-3d-color">لون القماش <input type="color" value={color} onChange={event=>setColor(event.target.value)}/></label>
         <label className="fashion-3d-range">ملمس القماش <span>{roughness<0.35?'ناعم ولامع':roughness>0.78?'مطفي وخشن':'متوازن'}</span><input type="range" min="0.12" max="1" step="0.04" value={roughness} onChange={event=>setRoughness(Number(event.target.value))}/></label>

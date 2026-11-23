@@ -82,9 +82,9 @@ export function createClothSolver(geometry, kind = 'bodice', measurements = {}, 
     }
   }
 
-  const bustRadius = clamp((Number(measurements?.bust) || 92) / (Math.PI * 100), 0.25, 0.36) * fitScale
-  const waistRadius = clamp((Number(measurements?.waist) || 74) / (Math.PI * 100), 0.20, 0.31) * fitScale
-  const hipRadius = clamp((Number(measurements?.hip) || 98) / (Math.PI * 100), 0.26, 0.38) * fitScale
+  const bustRadius = clamp((Number(measurements?.bust) || 92) / (2 * Math.PI * 100), 0.105, 0.19) * fitScale
+  const waistRadius = clamp((Number(measurements?.waist) || 74) / (2 * Math.PI * 100), 0.085, 0.16) * fitScale
+  const hipRadius = clamp((Number(measurements?.hip) || 98) / (2 * Math.PI * 100), 0.11, 0.20) * fitScale
   let frame = 0
   let disposed = false
 
@@ -111,7 +111,7 @@ export function createClothSolver(geometry, kind = 'bodice', measurements = {}, 
       const armX = side * (0.31 + v * 0.38) * fitScale
       const armY = (1.9 - v * 0.86) * fitScale + (1 - fitScale) * 1.2
       const radial = Math.hypot(y - armY, z)
-      const minimum = 0.125
+      const minimum = 0.052
       if (radial > 0.0001 && radial < minimum) {
         const scale = minimum / radial
         node.position[1] = armY + (y - armY) * scale
@@ -120,9 +120,9 @@ export function createClothSolver(geometry, kind = 'bodice', measurements = {}, 
       // Keep the sleeve outside the upper arm instead of letting it tunnel through.
       if (Math.abs(x - armX) < 0.025) node.position[0] += side * 0.025
     } else if (kind === 'trouser' || kind === 'trousers') {
-      const legX = side * 0.16 * fitScale
+      const legX = side * 0.105 * fitScale
       const radial = Math.hypot(x - legX, z)
-      const minimum = 0.125
+      const minimum = 0.075
       if (radial > 0.0001 && radial < minimum) {
         const scale = minimum / radial
         node.position[0] = legX + (x - legX) * scale
