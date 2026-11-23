@@ -163,6 +163,7 @@ export default function FashionDesignStudioSection({user,onNotice,onTryOn}){
  const [shapeStart,setShapeStart]=useState(null)
  const [showLayers,setShowLayers]=useState(true)
  const [workspaceMode,setWorkspaceMode]=useState('editor')
+ const [patternTransferNotice,setPatternTransferNotice]=useState('')
  const [openToolMenu,setOpenToolMenu]=useState('')
  const [selectionBounds,setSelectionBounds]=useState(null)
  const selectedShapeRef=useRef(null)
@@ -207,15 +208,16 @@ export default function FashionDesignStudioSection({user,onNotice,onTryOn}){
    const children=[
     {id:uid(),category:'pattern-fill',name:'مساحة القطعة',path:piece.path,color:'#f4f0e5',stroke:false,strokeWidth:.45,svgRaw:true,x:0,y:0,scale:1,rotation:0,visible:true},
     {id:uid(),category:'pattern-outline',name:'خط القص',path:piece.path,color:'#263329',stroke:true,strokeWidth:.8,svgRaw:true,x:0,y:0,scale:1,rotation:0,visible:true},
-    ...(piece.darts||[]).map((dart,dartIndex)=>({id:uid(),category:'pattern-dart',name:dart.label||'بنسة',path:dart.d,color:'#b46c4f',stroke:true,strokeWidth:.55,svgRaw:true,x:0,y:0,scale:1,rotation:0,visible:true})),
+    ...(piece.darts||[]).map(dart=>({id:uid(),category:'pattern-dart',name:dart.label||'بنسة',path:dart.d,color:'#b46c4f',stroke:true,strokeWidth:.55,svgRaw:true,x:0,y:0,scale:1,rotation:0,visible:true})),
     {id:uid(),category:'pattern-grainline',name:'خط النسيج',path:'M '+(piece.w/2)+' 4 V '+Math.max(8,piece.h-4),color:'#47877f',stroke:true,strokeWidth:.5,svgRaw:true,x:0,y:0,scale:1,rotation:0,visible:true}
    ];
-   return {id:uid(),type:'group',category:'pattern-piece',name:piece.name+' · مقاس '+selectedSize,children,x:0,y:0,scale:1,rotation:0,visible:true,opacity:1,svgTransform:'matrix('+scale+' 0 0 '+scale+' '+cellX+' '+cellY+')',patternMetadata:{size:selectedSize,measurements,unit:'cm',pieceId:piece.id}};
+   const patternMetadata={size:selectedSize,measurements,unit:'cm',pieceId:piece.id,pieceName:piece.name,kind:piece.kind,path:piece.path,darts:piece.darts||[],width:piece.w,height:piece.h};
+   return {id:uid(),type:'group',category:'pattern-piece',name:piece.name+' · مقاس '+selectedSize,children,x:0,y:0,scale:1,rotation:0,visible:true,opacity:1,svgTransform:'matrix('+scale+' 0 0 '+scale+' '+cellX+' '+cellY+')',patternMetadata};
   });
   if(!patternLayers.length){onNotice?.('لا توجد قطع باترون لإرسالها.');return}
-  const next=[...layers,...patternLayers];commit(next);
+  commit([...layers,...patternLayers]);
   const last=patternLayers[patternLayers.length-1];setSelected(last.id);setSelectedIds([last.id]);setTool('select');setWorkspaceMode('editor');setOpenToolMenu('');
-  onNotice?.('تم إرسال '+patternLayers.length+' قطع باترون كطبقات Vector مستقلة إلى لوحة التصميم. يمكنك تحديد كل قطعة وتحريكها أو تجميعها وتصديرها.');
+  onNotice?.('تم إرسال '+patternLayers.length+' قطع باترون كطبقات Vector مستقلة. افتح غرفة القياس 3D لمعاينتها على المانيكان.');
  };
  const addPart=item=>{
   const layer={id:uid(),catalogId:item.id,category,name:item.name,path:item.path,color,stroke:!!item.stroke,strokeWidth:item.stroke?5:2.5,x:0,y:0,scale:1,rotation:0,visible:true,textureScale:60,textureRotation:0,textureOpacity:1}
