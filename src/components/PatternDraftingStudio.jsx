@@ -59,6 +59,7 @@ const escapeXml = value => String(value).replace(/[&<>"']/g,char=>({'&':'&amp;',
 export default function PatternDraftingStudio({onSendToCanvas}) {
   const [measurements,setMeasurements]=useState(DEFAULTS)
   const [selected,setSelected]=useState('front')
+  const [selectedPieceIds,setSelectedPieceIds]=useState([])
   const [showAllowance,setShowAllowance]=useState(true)
   const [showGrid,setShowGrid]=useState(true)
   const [showDarts,setShowDarts]=useState(true)
@@ -72,8 +73,13 @@ export default function PatternDraftingStudio({onSendToCanvas}) {
   const update=(key,value)=>setMeasurements(current=>({...current,[key]:clamp(value)}))
   const reset=()=>{setMeasurements(DEFAULTS);setSelectedSize(38)}
   const renderPiece=(piece,stroke='#273a32',width='.35',fill='#f4f0e5',opacity=1)=> <g opacity={opacity}><path d={piece.path} fill={fill} stroke={stroke} strokeWidth={width} strokeLinejoin="round"/>{showDarts&&piece.darts.map((dart,index)=><g key={index}><path d={dart.d} fill="none" stroke="#b46c4f" strokeWidth=".28" strokeDasharray="1 0.6"/><text x="1" y={piece.h-1-index*2} fontSize="1.8" fill="#9b6048">{dart.label}</text></g>)}</g>
+  const toggleTransferPiece=id=>setSelectedPieceIds(current=>current.includes(id)?current.filter(value=>value!==id):[...current,id])
+  const selectAllTransferPieces=()=>setSelectedPieceIds(pieces.map(piece=>piece.id))
+  const clearTransferSelection=()=>setSelectedPieceIds([])
   const sendToCanvas=()=>{
-    const transferable=pieces.map(piece=>({
+    const chosenPieces=pieces.filter(piece=>selectedPieceIds.includes(piece.id))
+    if(!chosenPieces.length)return
+    const transferable=chosenPieces.map(piece=>({
       ...piece,
       darts:showDarts?piece.darts:[],
     }));
@@ -89,7 +95,8 @@ export default function PatternDraftingStudio({onSendToCanvas}) {
     const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'})),a=document.createElement('a');a.href=url;a.download=`vestra-pattern-size-${selectedSize}.svg`;a.click();URL.revokeObjectURL(url)
   }
   return <section className="vestra-pattern-studio" dir="rtl">
-    <header className="vestra-pattern-heading"><div><span>VESTRA · PATTERN LAB</span><h3>معمل الباترونات الاحترافية</h3><p>تشكيل منحنيات وبنسات مع تدريج المقاسات مباشرة.</p></div><div className="vestra-pattern-heading-actions"><button type="button" className="vestra-pattern-send" onClick={sendToCanvas}><Layers3 size={16}/> إرسال إلى لوحة التصميم</button><button type="button" onClick={exportSvg}><Download size={16}/> تصدير SVG · مقاس {selectedSize}</button></div></header>
+    <header className="vestra-pattern-heading"><div><span>VESTRA · PATTERN LAB</span><h3>معمل الباترونات الاحترافية</h3><p>تشكيل منحنيات وبنسات مع تدريج المقاسات مباشرة.</p></div><div className="vestra-pattern-heading-actions"><button type="button" className="vestra-pattern-send" onClick={sendToCanvas} disabled={!selectedPieceIds.length}><Layers3 size={16}/> إرسال المحدد ({selectedPieceIds.length})</button><button type="button" onClick={exportSvg}><Download size={16}/> تصدير SVG · مقاس {selectedSize}</button></div></header>
+    <div className="vestra-pattern-transfer" aria-label="اختيار قطع الباترون للإرسال"><div className="vestra-pattern-transfer-head"><div><strong>اختار القطع اللي هتنتقل للوحة التصميم</strong><small>حدد قطعة واحدة أو أكثر؛ القطع غير المحددة مش هتتبعت.</small></div><span>{selectedPieceIds.length} من {pieces.length} محدد</span></div><div className="vestra-pattern-transfer-actions"><button type="button" onClick={selectAllTransferPieces}>تحديد الكل</button><button type="button" onClick={clearTransferSelection} disabled={!selectedPieceIds.length}>إلغاء التحديد</button></div><div className="vestra-pattern-transfer-list">{pieces.map(piece=><label key={piece.id} className={selectedPieceIds.includes(piece.id)?'selected':''}><input type="checkbox" checked={selectedPieceIds.includes(piece.id)} onChange={()=>toggleTransferPiece(piece.id)}/><span>{piece.name}</span><small>{piece.w.toFixed(1)} × {piece.h.toFixed(1)} سم</small></label>)}</div></div>
     <div className="vestra-pattern-layout">
       <aside className="vestra-pattern-controls">
         {FIELD_GROUPS.map(group=><div className="vestra-pattern-card" key={group.title}><h4><Ruler size={16}/>{group.title}</h4><div className="vestra-measure-grid">{group.fields.map(([key,label])=><label key={key}><span>{label} <small>سم</small></span><input type="number" min="0" max="250" step=".5" value={measurements[key]} onChange={e=>update(key,e.target.value)}/></label>)}</div></div>)}
