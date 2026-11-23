@@ -8,3 +8,5 @@
 .fashion-3d-pattern-control .fashion-3d-toggle{margin-top:2px}
 @media(max-width:850px){.fashion-3d-pattern-control{grid-column:1/-1}}
 @media(max-width:520px){.fashion-3d-pattern-control{grid-column:auto}.fashion-3d-pattern-badge{top:8px;right:8px;font-size:10px;padding:7px 9px}}
+
+.fashion-3d-loading{display:grid;place-items:center;min-height:420px;padding:24px;border:1px dashed #cbd4c4;border-radius:16px;background:#f7f8f3;color:#53644f;font-size:13px;font-weight:700;text-align:center}
