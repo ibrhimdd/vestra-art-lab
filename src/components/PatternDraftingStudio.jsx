@@ -80,7 +80,7 @@ const getEditableHandles = (piece,m) => {
   if(piece.kind==='skirt'){const dartX=waist*.62;return [{id:'waist-width',label:'عرض الوسط',x:waist,y:0,field:'waist',axis:'x',offset:m.ease/4,factor:.25},{id:'hip-width',label:'عرض الأرداف',x:hip+2,y:m.skirtLength,field:'hip',axis:'x',offset:m.ease/4+2,factor:.25},{id:'skirt-length',label:'طول التنورة',x:-1,y:m.skirtLength,field:'skirtLength',axis:'y',offset:0,factor:1},{id:'dart-width',label:'عرض بنسة الوسط',x:dartX+m.skirtDart/2,y:1,field:'skirtDart',axis:'x',offset:dartX,factor:.5,dart:true}]}
   if(piece.kind==='sleeve'){const sleeveW=m.bicep/2+3;return [{id:'sleeve-width',label:'عرض الكم',x:sleeveW,y:18,field:'bicep',axis:'x',offset:3,factor:.5},{id:'sleeve-length',label:'طول الكم',x:sleeveW-1,y:m.sleeveLength,field:'sleeveLength',axis:'y',offset:0,factor:1}]}
   const legW=hip/2+2
-  return [{id:'trouser-width',label:'عرض البنطلون',x:legW,y:0,field:'hip',axis:'x',offset:m.ease/4+2,factor:.25},{id:'rise',label:'ارتفاع الحجر',x:legW-1,y:m.rise,field:'rise',axis:'y',offset:0,factor:1},{id:'trouser-length',label:'طول البنطلون',x:legW*.48,y:m.trouserLength,field:'trouserLength',axis:'y',offset:0,factor:1}]
+  return [{id:'trouser-width',label:'عرض البنطلون',x:legW,y:0,field:'hip',axis:'x',offset:m.ease/4+2,factor:.5},{id:'rise',label:'ارتفاع الحجر',x:legW-1,y:m.rise,field:'rise',axis:'y',offset:0,factor:1},{id:'trouser-length',label:'طول البنطلون',x:legW*.48,y:m.trouserLength,field:'trouserLength',axis:'y',offset:0,factor:1}]
 }
 const escapeXml = value => String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]))
 
