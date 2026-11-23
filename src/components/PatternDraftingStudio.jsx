@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Download, Ruler, Scissors, Printer, RotateCcw, Info, SlidersHorizontal } from 'lucide-react'
+import { Download, Ruler, Scissors, Printer, RotateCcw, Info, SlidersHorizontal, Layers3 } from 'lucide-react'
 import './PatternDraftingStudio.css'
 
 const DEFAULTS = {
@@ -56,7 +56,7 @@ const buildPieces = m => {
 }
 const escapeXml = value => String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]))
 
-export default function PatternDraftingStudio() {
+export default function PatternDraftingStudio({onSendToCanvas}) {
   const [measurements,setMeasurements]=useState(DEFAULTS)
   const [selected,setSelected]=useState('front')
   const [showAllowance,setShowAllowance]=useState(true)
@@ -72,6 +72,13 @@ export default function PatternDraftingStudio() {
   const update=(key,value)=>setMeasurements(current=>({...current,[key]:clamp(value)}))
   const reset=()=>{setMeasurements(DEFAULTS);setSelectedSize(38)}
   const renderPiece=(piece,stroke='#273a32',width='.35',fill='#f4f0e5',opacity=1)=> <g opacity={opacity}><path d={piece.path} fill={fill} stroke={stroke} strokeWidth={width} strokeLinejoin="round"/>{showDarts&&piece.darts.map((dart,index)=><g key={index}><path d={dart.d} fill="none" stroke="#b46c4f" strokeWidth=".28" strokeDasharray="1 0.6"/><text x="1" y={piece.h-1-index*2} fontSize="1.8" fill="#9b6048">{dart.label}</text></g>)}</g>
+  const sendToCanvas=()=>{
+    const transferable=pieces.map(piece=>({
+      ...piece,
+      darts:showDarts?piece.darts:[],
+    }));
+    onSendToCanvas?.({pieces:transferable,selectedSize,measurements:sizedMeasurements,showAllowance});
+  }
   const exportSvg=()=>{
     const all=buildPieces(sizedMeasurements),margin=5,gap=8
     let x=margin,y=margin,rowH=0,maxX=0
@@ -82,7 +89,7 @@ export default function PatternDraftingStudio() {
     const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'})),a=document.createElement('a');a.href=url;a.download=`vestra-pattern-size-${selectedSize}.svg`;a.click();URL.revokeObjectURL(url)
   }
   return <section className="vestra-pattern-studio" dir="rtl">
-    <header className="vestra-pattern-heading"><div><span>VESTRA · PATTERN LAB</span><h3>معمل الباترونات الاحترافية</h3><p>تشكيل منحنيات وبنسات مع تدريج المقاسات مباشرة.</p></div><button type="button" onClick={exportSvg}><Download size={16}/> تصدير SVG · مقاس {selectedSize}</button></header>
+    <header className="vestra-pattern-heading"><div><span>VESTRA · PATTERN LAB</span><h3>معمل الباترونات الاحترافية</h3><p>تشكيل منحنيات وبنسات مع تدريج المقاسات مباشرة.</p></div><div className="vestra-pattern-heading-actions"><button type="button" className="vestra-pattern-send" onClick={sendToCanvas}><Layers3 size={16}/> إرسال إلى لوحة التصميم</button><button type="button" onClick={exportSvg}><Download size={16}/> تصدير SVG · مقاس {selectedSize}</button></div></header>
     <div className="vestra-pattern-layout">
       <aside className="vestra-pattern-controls">
         {FIELD_GROUPS.map(group=><div className="vestra-pattern-card" key={group.title}><h4><Ruler size={16}/>{group.title}</h4><div className="vestra-measure-grid">{group.fields.map(([key,label])=><label key={key}><span>{label} <small>سم</small></span><input type="number" min="0" max="250" step=".5" value={measurements[key]} onChange={e=>update(key,e.target.value)}/></label>)}</div></div>)}
