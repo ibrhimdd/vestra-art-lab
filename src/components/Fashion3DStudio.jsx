@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { ContactShadows, OrbitControls } from '@react-three/drei'
-import { DoubleSide, Float32BufferAttribute, ShapeGeometry } from 'three'
+import { BufferGeometry, DoubleSide, Float32BufferAttribute, ShapeGeometry } from 'three'
 import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js'
 import './Fashion3DStudio.css'
 
@@ -17,15 +17,15 @@ function Mannequin({ garment, color, roughness, showBody, showBaseGarment, measu
   const fabric = useMemo(() => ({ color, roughness, metalness: 0.02 }), [color, roughness])
   const skin = '#d9b9a0'
   const dark = '#403a38'
-  const bustRadius = clamp(((measurements?.bust || 92) / (Math.PI * 100)) * 2, 0.25, 0.36)
-  const waistRadius = clamp(((measurements?.waist || 74) / (Math.PI * 100)) * 2, 0.20, 0.31)
-  const hipRadius = clamp(((measurements?.hip || 98) / (Math.PI * 100)) * 2, 0.26, 0.38)
+  const bustRadius = clamp(((measurements?.bust || 92) / (Math.PI * 100)), 0.25, 0.36)
+  const waistRadius = clamp(((measurements?.waist || 74) / (Math.PI * 100)), 0.20, 0.31)
+  const hipRadius = clamp(((measurements?.hip || 98) / (Math.PI * 100)), 0.26, 0.38)
   return (
     <group position={[0, -0.15, 0]}>
       <mesh position={[0, 2.38, 0]} castShadow><sphereGeometry args={[0.25, 32, 32]} /><meshStandardMaterial color={skin} roughness={0.72} /></mesh>
       <mesh position={[0, 2.08, 0]} castShadow><cylinderGeometry args={[0.105, 0.13, 0.28, 24]} /><meshStandardMaterial color={skin} roughness={0.78} /></mesh>
       {showBody && <mesh position={[0, 1.42, 0]} castShadow>
-        <cylinderGeometry args={[Math.max(0.28,bustRadius), Math.max(0.28,waistRadius), 1.05, 48, 2]} />
+        <cylinderGeometry args={[bustRadius, waistRadius, 1.05, 48, 2]} />
         <meshStandardMaterial color={skin} roughness={0.82} />
       </mesh>}
       <mesh position={[0, 0.75, 0]} castShadow><cylinderGeometry args={[hipRadius, waistRadius, 0.36, 36]} /><meshStandardMaterial color={skin} roughness={0.82} /></mesh>
@@ -81,9 +81,9 @@ function createProjection(piece, side, fitScale) {
   const face = isBack ? -1 : 1
   const m = piece.measurements || {}
   const bust = Number(m.bust) || 92, waist = Number(m.waist) || 74, hip = Number(m.hip) || 98
-  const bustR = clamp((bust / (Math.PI * 100)) * 2, 0.25, 0.36) * fitScale
-  const waistR = clamp((waist / (Math.PI * 100)) * 2, 0.20, 0.31) * fitScale
-  const hipR = clamp((hip / (Math.PI * 100)) * 2, 0.26, 0.38) * fitScale
+  const bustR = clamp(bust / (Math.PI * 100), 0.25, 0.36) * fitScale
+  const waistR = clamp(waist / (Math.PI * 100), 0.20, 0.31) * fitScale
+  const hipR = clamp(hip / (Math.PI * 100), 0.26, 0.38) * fitScale
   return (nx, ny, lift = 0) => {
     let x=0,y=0,z=0
     if (kind === 'bodice') {
@@ -163,7 +163,7 @@ function createPathLine(pathData, piece, side, fitScale, inset = 1) {
       for(let i=0;i<samples.length;i+=1){
         const p=samples[i]
         const nx=clamp(0.5+(p.x/width-0.5)*inset,0,1)
-        const ny=clamp(0.5+(p.y/height-0.5)*inset,0,1)
+        const ny=clamp((p.y<=0?(height+p.y)/height:p.y/height),0,1)
         const xyz=projection(nx,ny,0.006)
         points.push(xyz)
       }
@@ -174,7 +174,7 @@ function createPathLine(pathData, piece, side, fitScale, inset = 1) {
       if(i>0){vertices.push(...points[i-1],...points[i])}
     }
     if(!vertices.length)return null
-    const geometry=new (awaitGeometry())()
+    const geometry=new BufferGeometry()
     geometry.setAttribute('position',new Float32BufferAttribute(vertices,3))
     geometry.computeBoundingSphere()
     return geometry
@@ -183,9 +183,6 @@ function createPathLine(pathData, piece, side, fitScale, inset = 1) {
     return null
   }
 }
-
-// Kept as a tiny factory to avoid constructing line geometry during JSX rendering.
-function awaitGeometry(){ return (globalThis.__vestraThreeBufferGeometry || class extends Object {}) }
 
 function PatternLine({ geometry, color, dashed = false, width = 1 }) {
   useEffect(()=>()=>geometry?.dispose(),[geometry])
