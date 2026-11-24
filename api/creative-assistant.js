@@ -124,37 +124,38 @@ export default async function handler(req, res) {
       { role: 'user', content: userContent },
     ]
 
-    // Gemini can temporarily return 503 when model capacity is busy.
-    // Retry briefly, then use a lighter Gemini fallback before returning an error.
+    // Try the configured model first, then current stable Gemini fallbacks.
+    // Keep this list short enough to fit within the serverless function timeout.
     const configuredFallbacks = (process.env.AI_FALLBACK_MODELS || '')
       .split(',')
       .map(value => value.trim())
       .filter(Boolean)
     const legacyFallback = process.env.AI_FALLBACK_MODEL ? [process.env.AI_FALLBACK_MODEL] : []
     const defaultGeminiFallbacks = baseUrl.includes('generativelanguage.googleapis.com')
-      ? ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite']
+      ? ['gemini-4-hydrogen', 'gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite']
       : []
     const modelsToTry = [...new Set([
       model,
       ...configuredFallbacks,
       ...legacyFallback,
       ...defaultGeminiFallbacks,
-    ])].filter(Boolean)
+    ])].filter(Boolean).slice(0, 5)
+
+    const attempts = []
     let lastStatus = 502
     let lastError = 'Unknown provider error'
     let lastModel = model
 
-    // Bound every upstream call so a stalled provider cannot keep the Vercel
-    // function alive until its platform timeout.
-    for (const selectedModel of modelsToTry.slice(0, 3)) {
+    for (const [index, selectedModel] of modelsToTry.entries()) {
       lastModel = selectedModel
+      const startedAt = Date.now()
       let response
       let raw = ''
       let result = {}
       try {
         response = await fetch(endpoint, {
           method: 'POST',
-          signal: AbortSignal.timeout(10000),
+          signal: AbortSignal.timeout(7500),
           headers: {
             Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
@@ -170,37 +171,70 @@ export default async function handler(req, res) {
       } catch (error) {
         lastStatus = error?.name === 'TimeoutError' || error?.name === 'AbortError' ? 504 : 502
         lastError = error?.message || 'Network request failed'
+        attempts.push({
+          model: selectedModel,
+          status: lastStatus,
+          durationMs: Date.now() - startedAt,
+          outcome: 'network_error',
+        })
         console.warn('AI provider attempt failed:', {
           model: selectedModel,
           status: lastStatus,
           error: String(lastError).slice(0, 250),
         })
-        continue
       }
 
-      if (response.ok) {
+      if (response?.ok) {
         const answer = result.choices?.[0]?.message?.content
         if (typeof answer === 'string' && answer.trim()) {
-          return res.status(200).json({ text: answer.trim(), model: selectedModel })
+          attempts.push({
+            model: selectedModel,
+            status: response.status,
+            durationMs: Date.now() - startedAt,
+            outcome: 'success',
+          })
+          console.info('AI provider fallback sequence:', attempts)
+          return res.status(200).json({ text: answer.trim(), model: selectedModel, attempts })
         }
         lastStatus = 502
         lastError = 'Provider returned an empty response'
-        continue
+        attempts.push({
+          model: selectedModel,
+          status: lastStatus,
+          durationMs: Date.now() - startedAt,
+          outcome: 'empty_response',
+        })
+      } else if (response && !response.ok) {
+        lastStatus = response.status
+        lastError = result?.error?.message
+          || result?.message
+          || (raw ? raw.slice(0, 500) : 'Unknown provider error')
+        attempts.push({
+          model: selectedModel,
+          status: response.status,
+          durationMs: Date.now() - startedAt,
+          outcome: 'provider_error',
+        })
+        if (![429, 500, 502, 503, 504].includes(response.status)) break
       }
 
-      lastStatus = response.status
-      lastError = result?.error?.message
-        || result?.message
-        || (raw ? raw.slice(0, 500) : 'Unknown provider error')
-
-      if (![429, 500, 502, 503, 504].includes(response.status)) break
+      // Small backoff between transient failures gives a busy endpoint time to recover.
+      if (index < modelsToTry.length - 1 && [429, 500, 502, 503, 504].includes(lastStatus)) {
+        await new Promise(resolve => setTimeout(resolve, 250 * (index + 1)))
+      }
     }
 
-    console.error('AI provider request failed after model fallback chain:', { model: lastModel, status: lastStatus, error: String(lastError).slice(0, 500) })
+    console.error('AI provider request failed after model fallback chain:', {
+      model: lastModel,
+      status: lastStatus,
+      attempts,
+      error: String(lastError).slice(0, 500),
+    })
     return res.status(502).json({
       error: lastStatus === 429 || lastStatus === 503
-        ? 'مزود الذكاء الاصطناعي مشغول حالياً. حاول مرة أخرى بعد قليل.'
-        : 'تعذر الحصول على رد من مزود الذكاء الاصطناعي. راجع إعدادات المزود وحاول مرة أخرى.',
+        ? 'مزود الذكاء الاصطناعي مشغول حالياً. جُرّبت النماذج الاحتياطية ولم يتوفر رد؛ حاول مرة أخرى بعد قليل.'
+        : 'تعذر الحصول على رد من مزود الذكاء الاصطناعي بعد تجربة النماذج الاحتياطية.',
+      attempts,
     })
   } catch (error) {
     console.error('Creative assistant failed:', error?.message || error)
