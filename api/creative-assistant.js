@@ -53,6 +53,8 @@ function buildPrompt(payload) {
   if (payload.mode === 'critique') {
     const field = clean(payload.field, 80)
     const brief = clean(payload.brief, 1500)
+    const stage = clean(payload.stage, 80) || 'مراجعة التصميم النهائي'
+    const context = clean(payload.context, 1800)
     const metrics = payload.metrics && typeof payload.metrics === 'object' ? payload.metrics : {}
     const safeMetrics = {
       dimensions: clean(metrics.dimensions, 40),
@@ -105,9 +107,21 @@ export default async function handler(req, res) {
     }
 
     const endpoint = `${baseUrl.replace(/\/+$/, '')}/chat/completions`
+    const imageData = typeof payload.imageData === 'string' ? payload.imageData : ''
+    let userContent = prompt.user.slice(0, MAX_TEXT)
+    if (imageData) {
+      const match = imageData.match(/^data:(image\\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/)
+      if (!match || imageData.length > 5_500_000) {
+        return res.status(400).json({ error: 'صيغة الصورة غير مدعومة أو حجمها كبير. استخدم JPEG أو PNG أو WEBP بحجم أقل.' })
+      }
+      userContent = [
+        { type: 'text', text: userContent },
+        { type: 'image_url', image_url: { url: imageData, detail: 'high' } },
+      ]
+    }
     const messages = [
       { role: 'system', content: prompt.system },
-      { role: 'user', content: prompt.user.slice(0, MAX_TEXT) },
+      { role: 'user', content: userContent },
     ]
 
     // Gemini can temporarily return 503 when model capacity is busy.
