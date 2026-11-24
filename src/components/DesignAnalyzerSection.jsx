@@ -141,7 +141,7 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
             {aiAttempts.length > 0 && <div className="analyzer-attempts" aria-live="polite">
               <strong>سجل تشغيل النماذج</strong>
               <ol>{aiAttempts.map((attempt, index) => <li key={`${attempt.model}-${index}`}>
-                <span>{index + 1}. {attempt.model}</span>
+                <span>{index + 1}. {attempt.provider ? `${attempt.provider} · ` : ''}{attempt.model}</span>
                 <span className={attempt.outcome === 'success' ? 'attempt-success' : 'attempt-failed'}>
                   {attempt.outcome === 'success' ? 'نجح' : attempt.outcome === 'network_error' ? 'مشكلة اتصال' : attempt.outcome === 'empty_response' ? 'رد فارغ' : 'لم يستجب'}
                   {attempt.status ? ` · ${attempt.status}` : ''}
