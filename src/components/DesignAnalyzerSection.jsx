@@ -13,6 +13,7 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
   const [imageData, setImageData] = useState('')
   const [stage, setStage] = useState('مراجعة التصميم النهائي')
   const [aiBusy, setAiBusy] = useState(false)
+  const [aiAttempts, setAiAttempts] = useState([])
   const inputRef = useRef(null)
 
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
@@ -76,7 +77,7 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
       setError('سجّل الدخول وأنشئ فحصاً للصورة أولاً.')
       return
     }
-    setAiBusy(true); setError(''); setAiReview('')
+    setAiBusy(true); setError(''); setAiReview(''); setAiAttempts([])
     try {
       const token = await user.getIdToken()
       const controller = new AbortController()
@@ -106,6 +107,7 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
       } finally {
         clearTimeout(timeoutId)
       }
+      setAiAttempts(Array.isArray(data.attempts) ? data.attempts : [])
       if (!response.ok) throw new Error(data.error || 'تعذر إنشاء المراجعة.')
       if (!data.text) throw new Error('وصل رد فارغ من مزود الذكاء الاصطناعي.')
       setAiReview(data.text)
@@ -136,6 +138,17 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
             <label>مرحلة العمل<select value={stage} onChange={e=>setStage(e.target.value)}><option>مرحلة الفكرة الأولية</option><option>تطوير الاسكتش والتكوين</option><option>اختيار الألوان والخامات</option><option>مراجعة التصميم النهائي</option><option>تجهيز التصميم للتنفيذ</option></select></label>
             <label>اشرح فكرتك أو هدف التصميم<textarea rows="3" value={brief} onChange={e=>setBrief(e.target.value)} placeholder="ما الفكرة التي تريد إيصالها؟ وما الجمهور أو الاستخدام المستهدف؟"/></label>
             <button onClick={requestReview} disabled={aiBusy}><BrainCircuit size={16}/>{aiBusy?'جارٍ إعداد المراجعة...':'اطلب مراجعة الذكاء الاصطناعي'}</button>
+            {aiAttempts.length > 0 && <div className="analyzer-attempts" aria-live="polite">
+              <strong>سجل تشغيل النماذج</strong>
+              <ol>{aiAttempts.map((attempt, index) => <li key={`${attempt.model}-${index}`}>
+                <span>{index + 1}. {attempt.model}</span>
+                <span className={attempt.outcome === 'success' ? 'attempt-success' : 'attempt-failed'}>
+                  {attempt.outcome === 'success' ? 'نجح' : attempt.outcome === 'network_error' ? 'مشكلة اتصال' : attempt.outcome === 'empty_response' ? 'رد فارغ' : 'لم يستجب'}
+                  {attempt.status ? ` · ${attempt.status}` : ''}
+                  {Number.isFinite(attempt.durationMs) ? ` · ${(attempt.durationMs / 1000).toFixed(1)} ث` : ''}
+                </span>
+              </li>)}</ol>
+            </div>}
             {aiReview && <div className="analyzer-ai-output" dir="auto">{aiReview}</div>}
             <small>ترسل صورة مصغّرة محسّنة إلى مزود الذكاء الاصطناعي لتحليلها بصرياً، مع القياسات والوصف الذي تضيفه. تجنّب رفع صور تحتوي بيانات شخصية.</small>
           </div>
