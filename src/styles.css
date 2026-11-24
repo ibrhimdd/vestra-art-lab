@@ -967,3 +967,20 @@ html{scroll-padding-top:84px}
 .fashion-component-grid>button:hover{transform:translateY(-2px);border-color:#a7c66b;background:#293529}
 .fashion-category-tabs{scrollbar-width:thin;scrollbar-color:#71865d transparent}
 @media(max-width:700px){.fashion-catalog-search{position:sticky;top:0;z-index:3}.fashion-catalog-search input{font-size:12px}.fashion-component-grid>button{min-height:112px}}
+
+
+/* AI model fallback trace in the design analyzer */
+.analyzer-attempts {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--border-color, rgba(131, 197, 190, .35));
+  border-radius: 14px;
+  background: rgba(0, 109, 119, .06);
+  color: inherit;
+}
+.analyzer-attempts > strong { display: block; margin-bottom: 9px; }
+.analyzer-attempts ol { display: grid; gap: 8px; margin: 0; padding-inline-start: 22px; }
+.analyzer-attempts li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; font-size: .9rem; }
+.analyzer-attempts li > span:first-child { font-weight: 600; direction: ltr; text-align: left; }
+.analyzer-attempts .attempt-success { color: #16804a; font-weight: 700; }
+.analyzer-attempts .attempt-failed { color: #b45309; font-weight: 600; }
