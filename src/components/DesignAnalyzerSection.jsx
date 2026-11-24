@@ -10,6 +10,8 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
   const [field, setField] = useState('غير محدد')
   const [brief, setBrief] = useState('')
   const [aiReview, setAiReview] = useState('')
+  const [imageData, setImageData] = useState('')
+  const [stage, setStage] = useState('مراجعة التصميم النهائي')
   const [aiBusy, setAiBusy] = useState(false)
   const inputRef = useRef(null)
 
@@ -20,7 +22,7 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
     if (!file.type.startsWith('image/')) { setError('اختر صورة تصميم بصيغة مدعومة.'); return }
     if (file.size > MAX_SIZE) { setError('حجم الصورة يجب ألا يتجاوز 12 ميجابايت.'); return }
     const url = URL.createObjectURL(file)
-    setPreview(url); setAnalysis(null); setAiReview(''); setError(''); setBusy(true)
+    setPreview(url); setAnalysis(null); setAiReview(''); setImageData(''); setError(''); setBusy(true)
     const image = new Image()
     image.onload = () => {
       try {
@@ -31,6 +33,14 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
         const ctx = canvas.getContext('2d', { willReadFrequently: true })
         if (!ctx) throw new Error('Canvas unavailable')
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
+        const visionCanvas = document.createElement('canvas')
+        const visionScale = Math.min(1, 1280 / Math.max(image.naturalWidth, image.naturalHeight))
+        visionCanvas.width = Math.max(1, Math.round(image.naturalWidth * visionScale))
+        visionCanvas.height = Math.max(1, Math.round(image.naturalHeight * visionScale))
+        const visionContext = visionCanvas.getContext('2d')
+        if (!visionContext) throw new Error('Vision canvas unavailable')
+        visionContext.drawImage(image, 0, 0, visionCanvas.width, visionCanvas.height)
+        setImageData(visionCanvas.toDataURL('image/jpeg', 0.82))
         const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data
         let r=0,g=0,b=0,luma=0,count=0,min=255,max=0
         const buckets = new Map()
@@ -62,7 +72,7 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
   }
 
   const requestReview = async () => {
-    if (!analysis || !user?.getIdToken) {
+    if (!analysis || !imageData || !user?.getIdToken) {
       setError('سجّل الدخول وأنشئ فحصاً للصورة أولاً.')
       return
     }
@@ -79,7 +89,9 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
           signal: controller.signal,
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({
-            mode: 'critique', field, brief,
+            mode: 'critique', field, brief, stage,
+            context: 'مراجعة صورة تصميم مرفوعة من محلل التصميم داخل VESTRA ART LAB.',
+            imageData,
             metrics: {
               dimensions: `${analysis.width}×${analysis.height}`,
               ratio: analysis.ratio,
@@ -121,10 +133,11 @@ export default function DesignAnalyzerSection({ user, onNotice }) {
           <div className="analyzer-ai-panel">
             <div className="analyzer-ai-heading"><BrainCircuit size={18}/><strong>مراجعة إبداعية ذكية</strong><span>AI REVIEW</span></div>
             <label>المجال الفني<select value={field} onChange={e=>setField(e.target.value)}><option>غير محدد</option><option>الملابس والنسيج</option><option>التربية الفنية</option><option>التصميم الرقمي</option><option>الفنون الزخرفية</option></select></label>
+            <label>مرحلة العمل<select value={stage} onChange={e=>setStage(e.target.value)}><option>مرحلة الفكرة الأولية</option><option>تطوير الاسكتش والتكوين</option><option>اختيار الألوان والخامات</option><option>مراجعة التصميم النهائي</option><option>تجهيز التصميم للتنفيذ</option></select></label>
             <label>اشرح فكرتك أو هدف التصميم<textarea rows="3" value={brief} onChange={e=>setBrief(e.target.value)} placeholder="ما الفكرة التي تريد إيصالها؟ وما الجمهور أو الاستخدام المستهدف؟"/></label>
             <button onClick={requestReview} disabled={aiBusy}><BrainCircuit size={16}/>{aiBusy?'جارٍ إعداد المراجعة...':'اطلب مراجعة الذكاء الاصطناعي'}</button>
             {aiReview && <div className="analyzer-ai-output" dir="auto">{aiReview}</div>}
-            <small>المراجعة تستخدم القياسات والوصف النصي فقط؛ لا نرسل صورة التصميم إلى مزود AI.</small>
+            <small>ترسل صورة مصغّرة محسّنة إلى مزود الذكاء الاصطناعي لتحليلها بصرياً، مع القياسات والوصف الذي تضيفه. تجنّب رفع صور تحتوي بيانات شخصية.</small>
           </div>
           <small>الفحص التقني يقيس خصائص الصورة، ولا يمثل وحده حكماً فنياً على جودة العمل.</small>
         </>:<div className="analyzer-empty"><ScanSearch size={28}/><strong>تقرير التصميم سيظهر هنا</strong><span>التحليل يتم داخل متصفحك ولا يتم رفع الصورة إلى خادم.</span></div>}
