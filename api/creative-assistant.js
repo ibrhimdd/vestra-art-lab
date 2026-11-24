@@ -224,6 +224,77 @@ export default async function handler(req, res) {
       }
     }
 
+    // If every Gemini model is unavailable, route the request through OpenRouter's free-model router.
+    const openRouterKey = process.env.OPENROUTER_API_KEY
+    if (openRouterKey) {
+      const startedAt = Date.now()
+      let openRouterResponse
+      let openRouterRaw = ''
+      let openRouterResult = {}
+      try {
+        openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          signal: AbortSignal.timeout(12000),
+          headers: {
+            Authorization: `Bearer ${openRouterKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://vestra-art-lab.vercel.app',
+            'X-Title': 'VESTRA ART LAB',
+          },
+          body: JSON.stringify({
+            model: 'openrouter/free',
+            messages,
+            max_tokens: 1200,
+          }),
+        })
+        openRouterRaw = await openRouterResponse.text()
+        try { openRouterResult = openRouterRaw ? JSON.parse(openRouterRaw) : {} } catch { openRouterResult = {} }
+
+        const openRouterAnswer = openRouterResult.choices?.[0]?.message?.content
+        if (openRouterResponse.ok && typeof openRouterAnswer === 'string' && openRouterAnswer.trim()) {
+          attempts.push({
+            provider: 'OpenRouter',
+            model: openRouterResult.model || 'openrouter/free',
+            status: openRouterResponse.status,
+            durationMs: Date.now() - startedAt,
+            outcome: 'success',
+          })
+          console.info('AI provider fallback sequence:', attempts)
+          return res.status(200).json({
+            text: openRouterAnswer.trim(),
+            provider: 'OpenRouter',
+            model: openRouterResult.model || 'openrouter/free',
+            attempts,
+          })
+        }
+
+        lastStatus = openRouterResponse.status
+        lastError = openRouterResult?.error?.message
+          || (openRouterResponse.ok ? 'OpenRouter returned an empty response' : openRouterRaw.slice(0, 500))
+        attempts.push({
+          provider: 'OpenRouter',
+          model: openRouterResult.model || 'openrouter/free',
+          status: openRouterResponse.status,
+          durationMs: Date.now() - startedAt,
+          outcome: openRouterResponse.ok ? 'empty_response' : 'provider_error',
+        })
+      } catch (error) {
+        lastStatus = error?.name === 'TimeoutError' || error?.name === 'AbortError' ? 504 : 502
+        lastError = error?.message || 'OpenRouter network request failed'
+        attempts.push({
+          provider: 'OpenRouter',
+          model: 'openrouter/free',
+          status: lastStatus,
+          durationMs: Date.now() - startedAt,
+          outcome: 'network_error',
+        })
+        console.warn('OpenRouter fallback failed:', {
+          status: lastStatus,
+          error: String(lastError).slice(0, 250),
+        })
+      }
+    }
+
     console.error('AI provider request failed after model fallback chain:', {
       model: lastModel,
       status: lastStatus,
