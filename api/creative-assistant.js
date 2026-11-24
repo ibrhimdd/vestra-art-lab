@@ -110,7 +110,7 @@ export default async function handler(req, res) {
     const imageData = typeof payload.imageData === 'string' ? payload.imageData : ''
     let userContent = prompt.user.slice(0, MAX_TEXT)
     if (imageData) {
-      const match = imageData.match(/^data:(image\\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/)
+      const match = imageData.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/)
       if (!match || imageData.length > 5_500_000) {
         return res.status(400).json({ error: 'صيغة الصورة غير مدعومة أو حجمها كبير. استخدم JPEG أو PNG أو WEBP بحجم أقل.' })
       }
